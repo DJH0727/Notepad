@@ -23,7 +23,8 @@ public class Main extends Application {
 
 
         // 创建文本编辑区域
-        TextArea textArea = new TextArea();
+        NotepadTextArea notepadTextArea = new NotepadTextArea();
+        TextArea textArea = notepadTextArea.getTextArea();
 
         // 创建状态栏
         NotepadStatusBar statusBar = new NotepadStatusBar(textArea);
