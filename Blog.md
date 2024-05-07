@@ -32,7 +32,7 @@
 - （1） 在状态栏中显示当前光标所在位置的行号和列号。
 - （2） 显示当前文件的编码格式（如UTF-8）。
 
-##开发环境
+## 开发环境
  -  IntelliJ IDEA 2021.1.2IntelliJ IDEA 2023.3.6 (Community Edition)
  -  Build #IC-233.15026.9, built on March 21, 2024
  -  Runtime version: 17.0.10+1-b1087.23 amd64
@@ -61,6 +61,8 @@
 ## 2024-05-06
 
 - 完成菜单栏、文本编辑区域、状态栏的UI，但没有实现具体功能。
+
+~~没有使用Scene builder，直接在javafx上实的UI。~~
 
 ### 菜单栏
 `NotepadMenu.java`
