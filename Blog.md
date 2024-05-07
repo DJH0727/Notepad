@@ -32,6 +32,23 @@
 - （1） 在状态栏中显示当前光标所在位置的行号和列号。
 - （2） 显示当前文件的编码格式（如UTF-8）。
 
+##开发环境
+ -  IntelliJ IDEA 2021.1.2IntelliJ IDEA 2023.3.6 (Community Edition)
+ -  Build #IC-233.15026.9, built on March 21, 2024
+ -  Runtime version: 17.0.10+1-b1087.23 amd64
+ -  VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
+ -  Windows 11.0
+ - GC: G1 Young Generation, G1 Old Generation
+ - Memory: 2048M
+ - Cores: 16
+ - Registry:
+ - ide.experimental.ui=true
+ - Non-Bundled Plugins:
+ - com.intellij.zh (233.287)
+ - co.fitten.fittencode-intellij-beta (0.10.12)
+ - com.jetbrains.space (233.15026.16)
+ - Kotlin: 233.15026.9-IJ
+
 ## 2024-05-05
 
 ~~新建文件夹(bushi)~~
@@ -102,6 +119,50 @@ private MenuBar menuBar
 
 ----
 
+## 2024-05-07
+
+- 完成文本编辑的  
+1. 剪切 Cut();
+2. 复制 Copy();
+3. 粘贴 Paste();
+4. 全选 SelectAll();
+5. 时间/日期  TimeDate();
+
+基本的原理都是设置监听器监听点击事件，然后完成相应的动作。
+
+这些功能TextArea已经自带，或者调用了TextArea的相应方法实现。
+
+自己实现了，但是感觉多此一举）。
+
+### 例如剪切 Cut();
+```
+ public void Cut()
+    {
+        MenuItem CutMenuItem = new MenuItem("剪切");
+        CutMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+X"));
+        // textArea.cut(); 就能完成
+        try {
+            CutMenuItem.setOnAction(event -> { // 添加了一个点击事件监听器
+                Platform.runLater(() -> {
+                    // 获取系统剪贴板
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(textArea.getSelectedText());
+                    clipboard.setContent(content);
+                    textArea.replaceSelection("");
+                });
+            });
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        editMenu.getItems().add(CutMenuItem);
+    }
+```
+
+~~想了想还是先去搞文件操作吧，万一文件都打不开就惨了~~
+
+------
 
 
 
