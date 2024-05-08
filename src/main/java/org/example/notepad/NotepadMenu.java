@@ -215,13 +215,14 @@ class EditMenu extends NotepadMenu
                     final Clipboard clipboard = Clipboard.getSystemClipboard();
                     // 获取剪贴板中的内容
                     String text = clipboard.getString();
-                    // 检查是否有选中的文本
-                    if (textArea.getSelectedText() != null) {
-                        // 替换选中的文本
-                        textArea.replaceSelection(text);
-                    } else {
+                    // 检查是否有选中的文本,好想默认都有选中？，检查lenth为0才行
+                    if (textArea.getSelectedText().isEmpty()) {
                         // 在光标处插入文本
                         textArea.insertText(textArea.getCaretPosition(), text);
+                    } else {
+                        // 替换选中的文本
+                        textArea.replaceSelection(text);
+
                     }
                     //System.out.println("粘贴板中的文本: " + text);
                 } catch (Exception e) {
@@ -240,6 +241,23 @@ class EditMenu extends NotepadMenu
         MenuItem deleteMenuItem = new MenuItem("删除");
         deleteMenuItem.setAccelerator(KeyCombination.keyCombination("Del"));
 
+        deleteMenuItem.setOnAction(event -> {
+            Platform.runLater(() -> {
+                // 检查是否有选中的文本
+                if (textArea.getSelectedText().isEmpty()) {
+                    // 删除光标后的字符,如果光标后有字符
+                    if(textArea.getCaretPosition()!=textArea.getLength())
+                        textArea.deleteText(textArea.getCaretPosition(), textArea.getCaretPosition() + 1);
+
+                } else {
+
+                    // 删除选中的文本
+                    textArea.deleteText(textArea.getSelection().getStart(), textArea.getSelection().getEnd());
+                }
+
+            });
+        });
+
         editMenu.getItems().add(deleteMenuItem);
 
 
@@ -252,57 +270,74 @@ class EditMenu extends NotepadMenu
 
         gotoMenuItem.setOnAction(event -> {
 
-                        try {
-                            //获取当前光标位置行号
-                            Integer currentLine = textArea.getText(0, textArea.getCaretPosition()).split("\n").length;
-                            TextInputDialog dialog = new TextInputDialog(currentLine.toString());
-                            dialog.setTitle("跳转到指定行号");
-                            dialog.setHeaderText(null);
-                            dialog.setContentText("请输入行号:");
-                            Optional<String> result = dialog.showAndWait();
-                            //获取弹出框中的输入值
-                            int line=currentLine;
-                            if (result.isPresent()) {
-                                 line = Integer.parseInt(result.get());
-                            }
-                            //System.out.println("line"+line);
-                            // 跳转到指定行号
+            while (true) {
+                try {
+                    //获取当前光标位置行号
+                    Integer currentLine = textArea.getText(0, textArea.getCaretPosition()).split("\n",-1).length;
+                    int line = currentLine;
+                    //System.out.println("当前行号：" + currentLine);
+                    TextInputDialog dialog = new TextInputDialog(currentLine.toString());
+                    dialog.setTitle("跳转到指定行号");
+                    dialog.setHeaderText(null);
+                    dialog.setContentText("请输入行号:");
 
-                            int caretPosition = textArea.getCaretPosition();
-                            String []str = textArea.getText().split("\n");
-                            //conut个换行符，说明有count+1行
-                            Pattern pattern = Pattern.compile("\n");
-                            Matcher matcher = pattern.matcher(textArea.getText());
-                            int count = 1;
-                            while (matcher.find()) {
-                                count++;
-                            }
-                            //如果输入的行号不合法，则提示错误
-                            if(line > count||line<1) {
+                    // 限制只能输入数字
+                    dialog.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+                        if (!newValue.matches("\\d*")) {
+                            dialog.getEditor().setText(newValue.replaceAll("[\\D]", ""));
+                        }
+                    });
+                    // 显示对话框
+                    Optional<String> result = dialog.showAndWait();
 
-                                Alert alert = new Alert(Alert.AlertType.ERROR);
-                                alert.setTitle("错误");
-                                alert.setHeaderText(null);
-                                alert.setContentText("请输入正确的行号!");
-                                alert.showAndWait();
-                                throw new Exception();
-                            }
+                    if (result .isPresent()) {
+                        line = Integer.parseInt(result.get());
+                    }
+                    else {
+                        break;
+                    }
+                   // System.out.println("line" + line);
+                    // 跳转到指定行号
 
-                            //System.out.println(count);
-                            //计算需要跳转行数前有多少个字符，将光标移动到该位置
-                            int cnt=0;
-                            for(int i=0;i<line-1;i++)
-                            {
-                                cnt+=str[i].length()+1;
-                            }
-                            //System.out.println(cnt);
-                            textArea.positionCaret(cnt);
+                    int caretPosition = textArea.getCaretPosition();
+                    String[] str = textArea.getText().split("\n",-1);
+                    //conut个换行符，说明有count+1行
+                    Pattern pattern = Pattern.compile("\n");
+                    Matcher matcher = pattern.matcher(textArea.getText());
+                    int count = 1;
+                    while (matcher.find()) {
+                        count++;
+                    }
+                    //如果输入的行号不合法，则提示错误
+                    if (line > count || line < 1) {
 
-             } catch (Exception e1) {
-              System.out.println("请输入正确的行号!");
-              //e1.printStackTrace();
-              }
+
+                        throw new Exception();
+                    }
+
+                    //System.out.println(count);
+                    //计算需要跳转行数前有多少个字符，将光标移动到该位置
+                    int cnt = 0;
+                    for (int i = 0; i < line - 1; i++) {
+                        cnt += str[i].length() + 1;
+                    }
+                    //System.out.println(cnt);
+                    textArea.positionCaret(cnt);
+
+                    break;
+                } catch (Exception e1) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("错误");
+                    alert.setHeaderText(null);
+                    alert.setContentText("请输入正确的行号!");
+                    alert.showAndWait();
+                   // System.out.println("请输入正确的行号!!!");
+                    //e1.printStackTrace();
+                }
+
+            }
         });
+
 
 
 

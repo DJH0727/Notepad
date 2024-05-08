@@ -165,8 +165,38 @@ private MenuBar menuBar
 ~~想了想还是先去搞文件操作吧，万一文件都打不开就惨了~~
 
 ------
+## 2024-05-08
 
+~~byd转到功能硬控我两个小时，发现状态栏显示行数也写错了， 如果text只有换行符行数就为0，
+把分割条件改split("\n",-1)就行了;状态栏的字符统计也写错了，跟行列号的监听是一起的，只有在光标位置改变时才更新~~
+### 实现了转到功能
+- 转到功能用的TextInputDialog，可以让用户输入内容。用监听器和正则表达式限制输入内容。
+- 输入不合法内容时，会弹出警告框，用While循环实现输入合法内容或点击取消按钮才关闭对话框。
 
+### 实现了删除
+- 选中则删除选中，否则删除光标后面的字符。
+
+### 转到功能部分代码
+
+```
+ //获取当前光标位置行号
+        Integer currentLine = textArea.getText(0, textArea.getCaretPosition()).split("\n",-1).length;
+        int line = currentLine;
+        //System.out.println("当前行号：" + currentLine);
+        TextInputDialog dialog = new TextInputDialog(currentLine.toString());
+        dialog.setTitle("跳转到指定行号");
+        dialog.setHeaderText(null);
+        dialog.setContentText("请输入行号:");
+        // 限制只能输入数字
+        dialog.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+        if (!newValue.matches("\\d*")) {
+        dialog.getEditor().setText(newValue.replaceAll("[\\D]", ""));
+        }
+        });
+        // 显示对话框
+        Optional<String> result = dialog.showAndWait();
+
+```
 
 
 
