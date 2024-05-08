@@ -1,10 +1,17 @@
 package org.example.notepad;
 
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
 文件  fileMenu
@@ -131,14 +138,12 @@ class EditMenu extends NotepadMenu
         Cut();
         Copy();
         Paste();
-        MenuItem deleteMenuItem = new MenuItem("删除");
-        editMenu.getItems().add(deleteMenuItem);
+        Delete();
         MenuItem findMenuItem = new MenuItem("查找");
         editMenu.getItems().add(findMenuItem);
         MenuItem replaceMenuItem = new MenuItem("替换");
         editMenu.getItems().add(replaceMenuItem);
-        MenuItem gotoMenuItem = new MenuItem("转到");
-        editMenu.getItems().add(gotoMenuItem);
+        GoTo();
         SelectAll();
         TimeDate();
 
@@ -228,6 +233,80 @@ class EditMenu extends NotepadMenu
 
         editMenu.getItems().add(pasteMenuItem);
 
+    }
+
+    public void Delete()
+    {
+        MenuItem deleteMenuItem = new MenuItem("删除");
+        deleteMenuItem.setAccelerator(KeyCombination.keyCombination("Del"));
+
+        editMenu.getItems().add(deleteMenuItem);
+
+
+
+    }
+    public void GoTo()
+    {
+        MenuItem gotoMenuItem = new MenuItem("转到");
+        gotoMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+G"));
+
+        gotoMenuItem.setOnAction(event -> {
+
+                        try {
+                            //获取当前光标位置行号
+                            Integer currentLine = textArea.getText(0, textArea.getCaretPosition()).split("\n").length;
+                            TextInputDialog dialog = new TextInputDialog(currentLine.toString());
+                            dialog.setTitle("跳转到指定行号");
+                            dialog.setHeaderText(null);
+                            dialog.setContentText("请输入行号:");
+                            Optional<String> result = dialog.showAndWait();
+                            //获取弹出框中的输入值
+                            int line=currentLine;
+                            if (result.isPresent()) {
+                                 line = Integer.parseInt(result.get());
+                            }
+                            //System.out.println("line"+line);
+                            // 跳转到指定行号
+
+                            int caretPosition = textArea.getCaretPosition();
+                            String []str = textArea.getText().split("\n");
+                            //conut个换行符，说明有count+1行
+                            Pattern pattern = Pattern.compile("\n");
+                            Matcher matcher = pattern.matcher(textArea.getText());
+                            int count = 1;
+                            while (matcher.find()) {
+                                count++;
+                            }
+                            //如果输入的行号不合法，则提示错误
+                            if(line > count||line<1) {
+
+                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                alert.setTitle("错误");
+                                alert.setHeaderText(null);
+                                alert.setContentText("请输入正确的行号!");
+                                alert.showAndWait();
+                                throw new Exception();
+                            }
+
+                            //System.out.println(count);
+                            //计算需要跳转行数前有多少个字符，将光标移动到该位置
+                            int cnt=0;
+                            for(int i=0;i<line-1;i++)
+                            {
+                                cnt+=str[i].length()+1;
+                            }
+                            //System.out.println(cnt);
+                            textArea.positionCaret(cnt);
+
+             } catch (Exception e1) {
+              System.out.println("请输入正确的行号!");
+              //e1.printStackTrace();
+              }
+        });
+
+
+
+        editMenu.getItems().add(gotoMenuItem);
     }
 
     public void SelectAll() {
