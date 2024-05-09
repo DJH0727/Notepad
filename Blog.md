@@ -197,7 +197,7 @@ private MenuBar menuBar
         Optional<String> result = dialog.showAndWait();
 
 ```
-
+------
 ## 2024-05-09
 
 - ~~优化了一些代码，把TextArea改成了静态变量，在菜单栏的类中初始化，子菜单继承父菜单，可以直接使用TextArea。~~
@@ -208,7 +208,90 @@ private MenuBar menuBar
 - 增加状态栏开关
 - 增加新建功能
 - 增加打开txt文件功能
+- 实现了保存和另存为功能，另存为后，当前编辑的文件变为保存的文件
 - 实现窗口关闭监听器，监听当前窗口内容是否保存
+
+最头疼的代码片段
+```
+public void CheckIfSave()
+    {
+        currentStage.setOnCloseRequest(event -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Notepad");
+            alert.setHeaderText(null);
+            if(file!=null)
+                alert.setContentText("更改未保存，是否将更改保存到"+file.toPath());
+            else
+                alert.setContentText("是否保存文件");
+            ButtonType buttonSave = new ButtonType("保存");
+            ButtonType buttonDoNotSave = new ButtonType("不保存");
+            ButtonType buttonCancel = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(buttonSave, buttonDoNotSave, buttonCancel);
+
+            if (!textArea.getText().equals(SavedString))
+            {
+
+                Optional<ButtonType> result=alert.showAndWait();
+
+                if (result.get() == buttonSave){
+                    //文件是打开状态，保存到文件
+                    if(file!=null)
+                    {
+                        FileWriter writer;
+                        try {
+                            writer = new FileWriter(file);
+                            writer.write("");//清空原文件内容
+                            writer.write(textArea.getText());
+                            writer.flush();
+                            writer.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else {
+                        Stage stage = new Stage();
+                        FileChooser fileChooser = new FileChooser();
+                        fileChooser.setTitle("保存为");
+                        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+                        //打开资源管理器
+                        file = fileChooser.showSaveDialog(stage);
+
+                        if(file==null) event.consume();//取消保存，阻止窗口关闭事件;
+                        else {
+                            FileWriter writer;
+                            try {
+                                writer = new FileWriter(file);
+                                writer.write("");//清空原文件内容
+                                writer.write(textArea.getText());
+                                writer.flush();
+                                writer.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                   // System.out.println("save");
+                } else if (result.get() == buttonDoNotSave) {
+                   // System.out.println("do not save");
+                } else if (result.get() == buttonCancel) {
+                    event.consume();//阻止窗口关闭事件
+                   // System.out.println("cancel");
+                }
+
+                //System.out.println("文件未保存");
+            }
+
+
+        });
+
+    }
+
+```
+
+~~真的是bug满天飞，包括但不限于打开的多个窗口都链接的同一个文件~~
+
+~~不出以外的话应该能在周末结束吧，大概（~~
 
 
 

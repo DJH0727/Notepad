@@ -15,8 +15,9 @@ public class NotepadStatusBar
      Label encodingLabel;
     public NotepadStatusBar(TextArea textArea ) {
         //初始化状态标签
+        int initCharNum=textArea.getText().length();
         statusLabel = new Label("  行: 1 列: 1");
-        charnumLabel = new Label("  字符数: 0");
+        charnumLabel = new Label("  字符数: "+initCharNum);
         encodingLabel = new Label("编码: UTF-8  ");
 
         //监听器,更新光标位置

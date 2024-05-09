@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,9 +59,9 @@ public class NotepadMenu {
     public void setBorderPane(BorderPane borderPane,HBox hBox) {
         this.viewmenu.setBorderPane(borderPane,hBox);
     }
-    public void setStage(Stage stage)
+    public void initFileMenu(Stage stage,File file)
     {
-        filemenu.setStage(stage);
+        filemenu.initFileMenu(stage,file);
     }
 
 
@@ -100,16 +101,16 @@ class FileMenu
     TextArea textArea;
     File file;//打开的文件
     Stage currentStage;
-    String currentString;//文件打开时的文本，或者保存后的文本
-    public void setStage(Stage stage)
+    String SavedString;//文件打开时的文本，或者保存后的文本
+    public void initFileMenu(Stage stage,File file)
     {
-    this.currentStage=stage;
+    this.currentStage=stage;this.file=file;
 
     }
     public FileMenu(TextArea textArea)
     {
         this.textArea = textArea;
-        currentString=new String();
+        SavedString=textArea.getText();
 
 
         fileMenu = new Menu("文件");
@@ -132,10 +133,19 @@ class FileMenu
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
 
         newMenuItem.setOnAction(event -> {
-            //创建一个新窗口？
-            Stage stage = new Stage();
-            Main main= new Main();
-            main.start(stage);
+            //为了方便就直接创建一个新窗口，而不是清空当前窗口内容
+            currentStage.fireEvent(
+                    new WindowEvent(
+                            currentStage,
+                            WindowEvent.WINDOW_CLOSE_REQUEST
+                    )
+            );
+            if(!currentStage.isShowing())
+            {
+                Stage stage = new Stage();
+                Main main= new Main();
+                main.newStage(null,stage);
+            }
         });
         fileMenu.getItems().add(newMenuItem);
     }
@@ -144,23 +154,23 @@ class FileMenu
         MenuItem openMenuItem = new MenuItem("打开");
         openMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
 
-        Stage stage = new Stage();
+
         openMenuItem.setOnAction(e -> {
+            Stage stage = new Stage();
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
            //打开文件选择器
-            file= fileChooser.showOpenDialog(stage);
+            File openedfile= fileChooser.showOpenDialog(stage);
 
 
-            if (file != null) {
+            if (openedfile != null) {
                 try {
                     //将文件名设置为标题
-                    String fileName=file.getName();
-                    currentStage.setTitle(fileName);
-                    String content = new String(Files.readAllBytes(file.toPath()));
-                    textArea.setText(content);
-                    currentString=textArea.getText();
-                } catch (IOException ex) {
+                    Stage Newstage=new Stage();
+                    Main main =new Main();
+                    main.newStage(openedfile,Newstage);
+
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
@@ -170,7 +180,9 @@ class FileMenu
     }
 
 
-    public boolean CheckIfSave()
+
+//检查关闭窗口时，是否保存，不能检查新建时当前是否保存（除非新建是新建窗口且关闭当前窗口）
+    public void CheckIfSave()
     {
         currentStage.setOnCloseRequest(event -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -185,7 +197,7 @@ class FileMenu
             ButtonType buttonCancel = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
             alert.getButtonTypes().setAll(buttonSave, buttonDoNotSave, buttonCancel);
 
-            if (!textArea.getText().equals(currentString))
+            if (!textArea.getText().equals(SavedString))
             {
 
                 Optional<ButtonType> result=alert.showAndWait();
@@ -241,12 +253,58 @@ class FileMenu
 
 
         });
-        return false;
+
     }
 
     public void SaveFile() {
         MenuItem saveMenuItem = new MenuItem("保存");
         saveMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
+
+        saveMenuItem.setOnAction(event->{
+
+            if(file!=null)
+            {
+                FileWriter writer;
+                try {
+                    writer = new FileWriter(file);
+                    writer.write("");//清空原文件内容
+                    writer.write(textArea.getText());
+                    SavedString=textArea.getText();//更新保存之前的文本
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                Stage stage = new Stage();
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("保存为");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+                //打开资源管理器
+                file = fileChooser.showSaveDialog(stage);
+
+                if(file!=null)//新建了文件
+                {
+                    currentStage.setTitle(file.getName());
+                    FileWriter writer;
+                    try {
+                        writer = new FileWriter(file);
+                        writer.write("");//清空原文件内容
+                        writer.write(textArea.getText());
+                        SavedString=textArea.getText();//更新保存之前的文本
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        });
+
+
+
 
         fileMenu.getItems().add(saveMenuItem);
         }
@@ -254,6 +312,35 @@ class FileMenu
     public void SaveAsFile() {
         MenuItem saveAsMenuItem = new MenuItem("另存为");
         saveAsMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+Shift+S"));
+
+        saveAsMenuItem.setOnAction(event->{
+
+            Stage stage = new Stage();
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("保存为");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+            //打开资源管理器
+            file = fileChooser.showSaveDialog(stage);
+
+            if(file!=null)//新建了文件
+            {
+                currentStage.setTitle(file.getName());
+                FileWriter writer;
+                try {
+                    writer = new FileWriter(file);
+                    writer.write("");//清空原文件内容
+                    writer.write(textArea.getText());
+                    SavedString=textArea.getText();//更新保存之前的文本
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+
+        });
 
         fileMenu.getItems().add(saveAsMenuItem);
     }
@@ -263,7 +350,14 @@ class FileMenu
         MenuItem exitMenuItem = new MenuItem("退出");
         exitMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+Q"));
         exitMenuItem.setOnAction(event -> {
-            Platform.exit();
+            //模拟窗口关闭事件，方便CheckIfSave监听并判断是否保存
+            currentStage.fireEvent(
+                    new WindowEvent(
+                            currentStage,
+                            WindowEvent.WINDOW_CLOSE_REQUEST
+                    )
+            );
+
         });
         fileMenu.getItems().add(exitMenuItem);
     }
