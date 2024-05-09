@@ -1,6 +1,7 @@
 package org.example.notepad;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
@@ -57,10 +58,12 @@ public class NotepadMenu {
     ViewMenu viewmenu;//视图菜单
     HelpMenu helpmenu;//帮助菜单
     public void setBorderPane(BorderPane borderPane,HBox hBox) {
+
         this.viewmenu.setBorderPane(borderPane,hBox);
     }
     public void initFileMenu(Stage stage,File file)
     {
+
         filemenu.initFileMenu(stage,file);
     }
 
@@ -699,13 +702,15 @@ class HelpMenu
 {
     Menu helpMenu ;
     TextArea textArea;
+
+
     public HelpMenu(TextArea textArea)
     {
         this.textArea = textArea;
         helpMenu = new Menu("帮助");
         // 创建二级菜单
-        MenuItem aboutMenuItem = new MenuItem("关于");
-        helpMenu.getItems().add(aboutMenuItem);
+        aboutInfo();
+
 
     }
 
@@ -715,6 +720,30 @@ class HelpMenu
         return helpMenu;
     }
 
+
+    public void aboutInfo()
+    {
+        MenuItem aboutMenuItem = new MenuItem("关于");
+
+        aboutMenuItem.setOnAction(e -> {
+            Stage stage = new Stage();
+            stage.setTitle("关于");
+            VBox vbox = new VBox(new Label("程序名称：记事本\n" +
+                    "版本号：1.0\n" +
+                    "开发者信息：DJH0727\n" +
+                    "联系方式：2724948893@qq.com\n" +
+                    "仓库地址：https://github.com/DJH0727/Notepad\n" ));
+            vbox.setAlignment(Pos.CENTER);  // 设置文本居中
+            Scene scene = new Scene(vbox);
+
+            stage.setScene(scene);
+            stage.setMinWidth(300);  // 设置最小宽度
+            stage.setMinHeight(200);  // 设置最小高度
+            stage.show();
+        });
+
+        helpMenu.getItems().add(aboutMenuItem);
+    }
 
 
 }
