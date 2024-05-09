@@ -9,10 +9,10 @@ import javafx.scene.text.Font;
 
 public class NotepadStatusBar
 {
-    private HBox statusBar;//状态栏
-    private Label statusLabel;
+     HBox statusBar;//状态栏
+     Label statusLabel;
     Label charnumLabel;
-    private Label encodingLabel;
+     Label encodingLabel;
     public NotepadStatusBar(TextArea textArea ) {
         //初始化状态标签
         statusLabel = new Label("  行: 0 列: 0");

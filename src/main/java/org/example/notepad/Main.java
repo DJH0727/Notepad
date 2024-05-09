@@ -13,36 +13,48 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 public class Main extends Application {
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Notepad");
 
 
 
+        primaryStage.setOnCloseRequest(event -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Window Close Event");
+            alert.setHeaderText(null);
+            alert.setContentText("Window is closing");
+
+            alert.showAndWait();
+        });
+
+        NotepadTextArea notepadTextArea;
+        NotepadMenu notepadMenu;
+        NotepadStatusBar statusBar;
+        BorderPane borderPane;
 
         // 创建文本编辑区域
-        NotepadTextArea notepadTextArea = new NotepadTextArea();
+        notepadTextArea = new NotepadTextArea();
         TextArea textArea = notepadTextArea.getTextArea();
 
         // 创建菜单
-        NotepadMenu notepadMenu = new NotepadMenu(textArea);
+        notepadMenu = new NotepadMenu(textArea);
         MenuBar menuBar = notepadMenu.getMenuBar();
         // 创建状态栏
-        NotepadStatusBar statusBar = new NotepadStatusBar(textArea);
+        statusBar = new NotepadStatusBar(textArea);
         HBox statusBarHBox = statusBar.getStatusBar();
 
 
         // 设置布局
         //VBox vBox = new VBox(menuBar, textArea, statusBarHBox);
-        BorderPane borderPane = new BorderPane();
+        borderPane = new BorderPane();
         borderPane.setTop(menuBar);
         borderPane.setCenter(textArea);
         borderPane.setBottom(statusBarHBox);
+        //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
+        notepadMenu.setBorderPane(borderPane,statusBarHBox);
 
+        //borderPane.setBottom(null);
         Scene scene = new Scene(borderPane, 800, 600);
 
         primaryStage.setScene(scene);

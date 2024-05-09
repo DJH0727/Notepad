@@ -6,9 +6,15 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,26 +36,42 @@ import java.util.regex.Pattern;
     替换  replaceMenuItem
     转到  gotoMenuItem
     全选  selectAllMenuItem
-    时间   timeDateMenuItem
-    字体  fontMenuItem
-    缩放  zoomMenuItem
+    时间  timeDateMenuItem
+
 帮助  helpMenu
     关于  aboutMenuItem
+    字体  fontMenuItem
+    缩放  zoomMenuItem
+    自动换行  WrapTextMenuItem
 */
 public class NotepadMenu {
-    private MenuBar menuBar;
+    private MenuBar menuBar;//菜单栏
 
-    TextArea textArea;
+    TextArea textArea;//文本框
+    FileMenu filemenu;//文件菜单
+    EditMenu editmenu;//编辑菜单
+    ViewMenu viewmenu;//视图菜单
+    HelpMenu helpmenu;//帮助菜单
+    public void setBorderPane(BorderPane borderPane,HBox hBox) {
+        this.viewmenu.setBorderPane(borderPane,hBox);
+    }
     public NotepadMenu() {}
     public NotepadMenu(TextArea textArea) {
         menuBar = new MenuBar();
-        FileMenu filemenu = new FileMenu(textArea);
+        filemenu = new FileMenu(textArea);
         Menu fileMenu = filemenu.getFileMenu();
-        EditMenu editmenu = new EditMenu(textArea);
+
+        editmenu= new EditMenu(textArea);
         Menu editMenu = editmenu.getEditMenu();
-        HelpMenu helpmenu = new HelpMenu(textArea);
+
+        viewmenu = new ViewMenu(textArea);
+        Menu viewMenu =viewmenu.getViewMenu();
+
+        helpmenu = new HelpMenu(textArea);
         Menu helpMenu = helpmenu.getHelpMenu();
-        menuBar.getMenus().addAll(fileMenu, editMenu, helpMenu);
+
+        menuBar.getMenus().addAll(fileMenu, editMenu,viewMenu, helpMenu);
+
         this.textArea = textArea;
         //if(this.textArea == null)System.out.println("TextArea is null");
     }
@@ -60,14 +82,20 @@ public class NotepadMenu {
 
 }
 
+
+
 class FileMenu
 {
     Menu fileMenu ;
 
     TextArea textArea;
+    File file;//打开的文件
     public FileMenu(TextArea textArea)
     {
         this.textArea = textArea;
+
+
+
         fileMenu = new Menu("文件");
         // 创建二级菜单
         NewFile();
@@ -86,12 +114,35 @@ class FileMenu
         MenuItem newMenuItem = new MenuItem("新建");
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
 
+        newMenuItem.setOnAction(event -> {
+            //创建一个新窗口？
+            Stage stage = new Stage();
+            Main main= new Main();
+            main.start(stage);
+        });
         fileMenu.getItems().add(newMenuItem);
     }
 
     public void OpenFile() {
         MenuItem openMenuItem = new MenuItem("打开");
         openMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
+
+        Stage stage = new Stage();
+        openMenuItem.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+           //打开文件选择器
+            file= fileChooser.showOpenDialog(stage);
+
+            if (file != null) {
+                try {
+                    String content = new String(Files.readAllBytes(file.toPath()));
+                    textArea.setText(content);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
 
         fileMenu.getItems().add(openMenuItem);
     }
@@ -123,11 +174,12 @@ class FileMenu
 
 }
 
-class EditMenu extends NotepadMenu
+class EditMenu
 {
     Menu editMenu ;
 
     TextArea textArea;
+
     public EditMenu(TextArea textArea)
     {
         this.textArea = textArea;
@@ -395,8 +447,65 @@ class EditMenu extends NotepadMenu
 
 
 }
+//查看
+class ViewMenu
+{
+    Menu viewMenu ;
+    TextArea textArea;
 
-class HelpMenu extends NotepadMenu
+    BorderPane borderPane;
+
+    HBox statusBarHBox;
+    public void setBorderPane(BorderPane borderPane,HBox statusBarHBox) {
+        this.statusBarHBox = statusBarHBox;
+        this.borderPane = borderPane;
+    }
+    public ViewMenu(TextArea textArea) {
+
+        this.textArea = textArea;
+        viewMenu = new Menu("查看");
+        MenuItem fontMenuItem = new MenuItem("字体");
+        viewMenu.getItems().add(fontMenuItem);
+        MenuItem zoomMenuItem = new MenuItem("缩放");
+        viewMenu.getItems().add(zoomMenuItem);
+        ShowStatusBar();
+        WrapText();
+    }
+
+    public void ShowStatusBar()
+    {
+        CheckMenuItem statusBarMenuItem = new CheckMenuItem("状态栏");
+
+        statusBarMenuItem.setSelected(true);
+        statusBarMenuItem.setOnAction(event -> {
+                    if (statusBarMenuItem.isSelected()) {
+                       borderPane.setBottom(statusBarHBox);
+                    } else {
+                       borderPane.setBottom(null);
+                    }
+
+                });
+        viewMenu.getItems().add(statusBarMenuItem);
+
+
+    }
+
+    public void WrapText() {
+        CheckMenuItem wrapTextMenuItem = new CheckMenuItem("自动换行");
+        wrapTextMenuItem.setSelected(true);
+        wrapTextMenuItem.setOnAction(event -> {
+            textArea.setWrapText(wrapTextMenuItem.isSelected());
+        });
+        viewMenu.getItems().add(wrapTextMenuItem);
+    }
+    public Menu getViewMenu()
+    {
+        return viewMenu;
+    }
+
+}
+
+class HelpMenu
 {
     Menu helpMenu ;
     TextArea textArea;
@@ -407,12 +516,7 @@ class HelpMenu extends NotepadMenu
         // 创建二级菜单
         MenuItem aboutMenuItem = new MenuItem("关于");
         helpMenu.getItems().add(aboutMenuItem);
-        MenuItem fontMenuItem = new MenuItem("字体");
-        helpMenu.getItems().add(fontMenuItem);
-        MenuItem zoomMenuItem = new MenuItem("缩放");
-        helpMenu.getItems().add(zoomMenuItem);
-        CheckMenuItem WrapTextMenuItem= new CheckMenuItem("自动换行");
-        helpMenu.getItems().add(WrapTextMenuItem);
+
     }
 
 
@@ -420,4 +524,7 @@ class HelpMenu extends NotepadMenu
     {
         return helpMenu;
     }
+
+
+
 }
