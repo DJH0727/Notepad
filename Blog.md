@@ -293,6 +293,34 @@ public void CheckIfSave()
 
 ~~不出以外的话应该能在周末结束吧，大概（~~
 
+- 晚上
+- 增加了编码显示功能，支持UTF-8、UTF-16、GB2312
+- 发现传参有亿点点不合理，基本重构，还好影响不大
+- 增加文件是否保存显示，如果文件未保存，文件名前面会显示“*”号
+```
+ public void CheckSave(Stage stage) {
+
+        textArea.textProperty().addListener(new ChangeListener<String>() {
+
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if(textArea.getText().equals(SavedText))
+                {
+                    stage.setTitle(file.getName());
+                }
+                else
+                {
+                    stage.setTitle("*"+file.getName());
+                }
+                //System.out.println("changed");
+            }
+        });
+
+
+    }
+```
+~~越写越乱，都快不知道自己在写什么了；增加一个功能就会出现若干bug~~
+
 
 
 

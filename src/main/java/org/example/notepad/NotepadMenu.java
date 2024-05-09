@@ -57,9 +57,10 @@ public class NotepadMenu {
     EditMenu editmenu;//编辑菜单
     ViewMenu viewmenu;//视图菜单
     HelpMenu helpmenu;//帮助菜单
-    public void setBorderPane(BorderPane borderPane,HBox hBox) {
+    File file;//打开的文件
+    public void setBorderPane(BorderPane borderPane,NotepadStatusBar bar) {
 
-        this.viewmenu.setBorderPane(borderPane,hBox);
+        this.viewmenu.initViewMenu(borderPane,bar);
     }
     public void initFileMenu(Stage stage,File file)
     {
@@ -69,23 +70,23 @@ public class NotepadMenu {
 
 
     public NotepadMenu() {}
-    public NotepadMenu(TextArea textArea) {
+    public NotepadMenu(NotepadTextArea notepadTextArea,File file) {
         menuBar = new MenuBar();
-        filemenu = new FileMenu(textArea);
+        filemenu = new FileMenu(notepadTextArea);
         Menu fileMenu = filemenu.getFileMenu();
 
-        editmenu= new EditMenu(textArea);
+        editmenu= new EditMenu(notepadTextArea);
         Menu editMenu = editmenu.getEditMenu();
 
-        viewmenu = new ViewMenu(textArea);
+        viewmenu = new ViewMenu(notepadTextArea,file);
         Menu viewMenu =viewmenu.getViewMenu();
 
-        helpmenu = new HelpMenu(textArea);
+        helpmenu = new HelpMenu(notepadTextArea);
         Menu helpMenu = helpmenu.getHelpMenu();
 
         menuBar.getMenus().addAll(fileMenu, editMenu,viewMenu, helpMenu);
 
-        this.textArea = textArea;
+        this.textArea = notepadTextArea.getTextArea();
         //if(this.textArea == null)System.out.println("TextArea is null");
     }
 
@@ -105,16 +106,18 @@ class FileMenu
     File file;//打开的文件
     Stage currentStage;
     String SavedString;//文件打开时的文本，或者保存后的文本
+    NotepadTextArea notepadTextArea;
     public void initFileMenu(Stage stage,File file)
     {
     this.currentStage=stage;this.file=file;
 
     }
-    public FileMenu(TextArea textArea)
+    public FileMenu(NotepadTextArea notepadTextArea)
     {
-        this.textArea = textArea;
+        this.notepadTextArea = notepadTextArea;
+        this.textArea =  notepadTextArea.getTextArea();
         SavedString=textArea.getText();
-
+        notepadTextArea.setSavedText(SavedString);
 
         fileMenu = new Menu("文件");
         // 创建二级菜单
@@ -273,6 +276,8 @@ class FileMenu
                     writer.write("");//清空原文件内容
                     writer.write(textArea.getText());
                     SavedString=textArea.getText();//更新保存之前的文本
+                    notepadTextArea.setSavedText(SavedString);
+                    currentStage.setTitle(file.getName());
                     writer.flush();
                     writer.close();
                 } catch (IOException e) {
@@ -296,6 +301,9 @@ class FileMenu
                         writer.write("");//清空原文件内容
                         writer.write(textArea.getText());
                         SavedString=textArea.getText();//更新保存之前的文本
+                        notepadTextArea.setSavedText(SavedString);
+
+                        notepadTextArea.setFile(file);
                         writer.flush();
                         writer.close();
                     } catch (IOException e) {
@@ -334,6 +342,9 @@ class FileMenu
                     writer.write("");//清空原文件内容
                     writer.write(textArea.getText());
                     SavedString=textArea.getText();//更新保存之前的文本
+
+                    notepadTextArea.setFile(file);
+
                     writer.flush();
                     writer.close();
                 } catch (IOException e) {
@@ -373,9 +384,9 @@ class EditMenu
 
     TextArea textArea;
 
-    public EditMenu(TextArea textArea)
+    public EditMenu(NotepadTextArea notepadTextArea )
     {
-        this.textArea = textArea;
+        this.textArea =  notepadTextArea.getTextArea();
         editMenu = new Menu("编辑");
         // 创建二级菜单
         MenuItem undoMenuItem = new MenuItem("撤销");
@@ -648,17 +659,25 @@ class ViewMenu
 
     BorderPane borderPane;
 
-    HBox statusBarHBox;
-    public void setBorderPane(BorderPane borderPane,HBox statusBarHBox) {
+    NotepadStatusBar statusBarHBox;
+    //编码方式
+    String encoding;
+    File file;
+    public void initViewMenu(BorderPane borderPane,NotepadStatusBar statusBarHBox) {
         this.statusBarHBox = statusBarHBox;
         this.borderPane = borderPane;
     }
-    public ViewMenu(TextArea textArea) {
+    public ViewMenu(NotepadTextArea notepadTextArea ,File file) {
 
-        this.textArea = textArea;
+        this.textArea = notepadTextArea.getTextArea();
+        this.file=file;
         viewMenu = new Menu("查看");
+
+
+        // 创建二级菜单
         MenuItem fontMenuItem = new MenuItem("字体");
         viewMenu.getItems().add(fontMenuItem);
+        Encoding();
         MenuItem zoomMenuItem = new MenuItem("缩放");
         viewMenu.getItems().add(zoomMenuItem);
         ShowStatusBar();
@@ -672,7 +691,7 @@ class ViewMenu
         statusBarMenuItem.setSelected(true);
         statusBarMenuItem.setOnAction(event -> {
                     if (statusBarMenuItem.isSelected()) {
-                       borderPane.setBottom(statusBarHBox);
+                       borderPane.setBottom(statusBarHBox.getStatusBar());
                     } else {
                        borderPane.setBottom(null);
                     }
@@ -682,6 +701,58 @@ class ViewMenu
 
 
     }
+
+    public void Encoding() {
+
+        Menu encodingMenu = new Menu("编码方式");
+        viewMenu.getItems().add(encodingMenu);
+        //System.out.println(file+"Encoding");
+        if(file==null) encodingMenu.setDisable(true);//新建文件时禁用编码菜单，能力有限（
+
+            //
+        ToggleGroup group = new ToggleGroup();
+
+        RadioMenuItem UTF8MenuItem = new RadioMenuItem("UTF-8");
+        group.getToggles().add(UTF8MenuItem);
+        encodingMenu.getItems().add(UTF8MenuItem);
+        UTF8MenuItem.setUserData("UTF-8");
+        UTF8MenuItem.setSelected(true);
+        RadioMenuItem UTF16MenuItem = new RadioMenuItem("UTF-16");
+        group.getToggles().add(UTF16MenuItem);
+        encodingMenu.getItems().add(UTF16MenuItem);
+        UTF16MenuItem.setUserData("UTF-16");
+        RadioMenuItem GB2312MenuItem = new RadioMenuItem("GB2312");
+        group.getToggles().add(GB2312MenuItem);
+        encodingMenu.getItems().add(GB2312MenuItem);
+        GB2312MenuItem.setUserData("GB2312");
+
+        group.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                encoding = (String) newValue.getUserData();
+                statusBarHBox.setEncoding(encoding);
+
+                if(file!=null) {
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(
+                                    new FileInputStream(file), encoding))) {
+                        textArea.clear();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            textArea.appendText(line);
+                            textArea.appendText("\n");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                //System.out.println("编码方式：" + encoding);
+            }
+
+        });
+    }
+
+
 
     public void WrapText() {
         CheckMenuItem wrapTextMenuItem = new CheckMenuItem("自动换行");
@@ -704,9 +775,9 @@ class HelpMenu
     TextArea textArea;
 
 
-    public HelpMenu(TextArea textArea)
+    public HelpMenu(NotepadTextArea notepadTextArea )
     {
-        this.textArea = textArea;
+        this.textArea = notepadTextArea.getTextArea();
         helpMenu = new Menu("帮助");
         // 创建二级菜单
         aboutInfo();

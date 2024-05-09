@@ -13,12 +13,22 @@ public class NotepadStatusBar
      Label statusLabel;
     Label charnumLabel;
      Label encodingLabel;
-    public NotepadStatusBar(TextArea textArea ) {
+     String encoding;
+     public void setEncoding(String encoding) {
+        this.encoding = encoding;
+        encodingLabel.setText("编码: "+encoding+"  ");
+    }
+    public String getEncoding() {
+        return encoding;
+    }
+    public NotepadStatusBar(NotepadTextArea notepadTextArea  ) {
+         TextArea textArea = notepadTextArea.getTextArea();
+        encoding="UTF-8";
         //初始化状态标签
         int initCharNum=textArea.getText().length();
         statusLabel = new Label("  行: 1 列: 1");
         charnumLabel = new Label("  字符数: "+initCharNum);
-        encodingLabel = new Label("编码: UTF-8  ");
+        encodingLabel = new Label("编码: "+encoding+"  ");
 
         //监听器,更新光标位置
         textArea.caretPositionProperty().addListener((obs, oldVal, newVal) -> {
@@ -40,7 +50,7 @@ public class NotepadStatusBar
         HBox.setHgrow(spacer, Priority.ALWAYS);
         //设置状态栏
         statusBar = new HBox(statusLabel, charnumLabel,spacer, encodingLabel);
-        statusBar.setPrefHeight(15);//状态栏高度15像素
+        statusBar.setPrefHeight(16);//状态栏高度15像素
         statusLabel.setFont(new Font(12)); // 字体大小
         encodingLabel.setFont(new Font(12));
         statusBar.setStyle("-fx-background-color: #F5F5F5;");

@@ -1,11 +1,30 @@
 package org.example.notepad;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
+
+import java.io.File;
 
 public class NotepadTextArea {
     private TextArea textArea;
 
+    public String getSavedText() {
+        return SavedText;
+    }
+
+    public void setSavedText(String savedText) {
+        SavedText = savedText;
+    }
+
+    String SavedText;
+
+    File file;
+    public void setFile(File file) {
+        this.file = file;
+    }
     public NotepadTextArea() {
 
         textArea = new TextArea();
@@ -20,4 +39,28 @@ public class NotepadTextArea {
     public TextArea getTextArea() {
         return textArea;
     }
+//检测是否有修改,如果有修改而且没有保存,则显示星号
+    public void CheckSave(Stage stage) {
+
+        textArea.textProperty().addListener(new ChangeListener<String>() {
+
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if(textArea.getText().equals(SavedText))
+                {
+                    stage.setTitle(file.getName());
+                }
+                else
+                {
+                    stage.setTitle("*"+file.getName());
+
+                }
+                //System.out.println("changed");
+            }
+        });
+
+
+    }
+
+
 }
