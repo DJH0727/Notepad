@@ -46,15 +46,16 @@ public class NotepadTextArea {
 
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if(textArea.getText().equals(SavedText))
-                {
-                    stage.setTitle(file.getName());
-                }
-                else
-                {
-                    stage.setTitle("*"+file.getName());
+               if(file!=null)
+                    if(textArea.getText().equals(SavedText))
+                    {
+                        stage.setTitle(file.getName());
+                    }
+                    else
+                    {
+                        stage.setTitle("*"+file.getName());
 
-                }
+                    }
                 //System.out.println("changed");
             }
         });
