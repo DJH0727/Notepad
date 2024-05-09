@@ -541,7 +541,7 @@ class EditMenu
                    // System.out.println("line" + line);
                     // 跳转到指定行号
 
-                    int caretPosition = textArea.getCaretPosition();
+                    //int caretPosition = textArea.getCaretPosition();
                     String[] str = textArea.getText().split("\n",-1);
                     //conut个换行符，说明有count+1行
                     Pattern pattern = Pattern.compile("\n");
