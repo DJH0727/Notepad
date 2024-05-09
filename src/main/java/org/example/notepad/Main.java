@@ -19,14 +19,7 @@ public class Main extends Application {
 
 
 
-        primaryStage.setOnCloseRequest(event -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Window Close Event");
-            alert.setHeaderText(null);
-            alert.setContentText("Window is closing");
 
-            alert.showAndWait();
-        });
 
         NotepadTextArea notepadTextArea;
         NotepadMenu notepadMenu;
@@ -54,10 +47,14 @@ public class Main extends Application {
         //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
         notepadMenu.setBorderPane(borderPane,statusBarHBox);
 
+
         //borderPane.setBottom(null);
         Scene scene = new Scene(borderPane, 800, 600);
 
         primaryStage.setScene(scene);
+        //传入stage
+        notepadMenu.setStage(primaryStage);
+        notepadMenu.filemenu.CheckIfSave();
         primaryStage.show();
     }
 }

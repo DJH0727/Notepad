@@ -12,8 +12,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -55,6 +58,12 @@ public class NotepadMenu {
     public void setBorderPane(BorderPane borderPane,HBox hBox) {
         this.viewmenu.setBorderPane(borderPane,hBox);
     }
+    public void setStage(Stage stage)
+    {
+        filemenu.setStage(stage);
+    }
+
+
     public NotepadMenu() {}
     public NotepadMenu(TextArea textArea) {
         menuBar = new MenuBar();
@@ -90,10 +99,17 @@ class FileMenu
 
     TextArea textArea;
     File file;//打开的文件
+    Stage currentStage;
+    String currentString;//文件打开时的文本，或者保存后的文本
+    public void setStage(Stage stage)
+    {
+    this.currentStage=stage;
+
+    }
     public FileMenu(TextArea textArea)
     {
         this.textArea = textArea;
-
+        currentString=new String();
 
 
         fileMenu = new Menu("文件");
@@ -103,6 +119,7 @@ class FileMenu
         SaveFile();
         SaveAsFile();
         ExitFile();
+        //CheckIfSave();
     }
 
     public Menu getFileMenu()
@@ -134,10 +151,15 @@ class FileMenu
            //打开文件选择器
             file= fileChooser.showOpenDialog(stage);
 
+
             if (file != null) {
                 try {
+                    //将文件名设置为标题
+                    String fileName=file.getName();
+                    currentStage.setTitle(fileName);
                     String content = new String(Files.readAllBytes(file.toPath()));
                     textArea.setText(content);
+                    currentString=textArea.getText();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -147,6 +169,80 @@ class FileMenu
         fileMenu.getItems().add(openMenuItem);
     }
 
+
+    public boolean CheckIfSave()
+    {
+        currentStage.setOnCloseRequest(event -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Notepad");
+            alert.setHeaderText(null);
+            if(file!=null)
+                alert.setContentText("更改未保存，是否将更改保存到"+file.toPath());
+            else
+                alert.setContentText("是否保存文件");
+            ButtonType buttonSave = new ButtonType("保存");
+            ButtonType buttonDoNotSave = new ButtonType("不保存");
+            ButtonType buttonCancel = new ButtonType("取消", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(buttonSave, buttonDoNotSave, buttonCancel);
+
+            if (!textArea.getText().equals(currentString))
+            {
+
+                Optional<ButtonType> result=alert.showAndWait();
+
+                if (result.get() == buttonSave){
+                    //文件是打开状态，保存到文件
+                    if(file!=null)
+                    {
+                        FileWriter writer;
+                        try {
+                            writer = new FileWriter(file);
+                            writer.write("");//清空原文件内容
+                            writer.write(textArea.getText());
+                            writer.flush();
+                            writer.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else {
+                        Stage stage = new Stage();
+                        FileChooser fileChooser = new FileChooser();
+                        fileChooser.setTitle("保存为");
+                        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+                        //打开资源管理器
+                        file = fileChooser.showSaveDialog(stage);
+
+                        if(file==null) event.consume();//取消保存，阻止窗口关闭事件;
+                        else {
+                            FileWriter writer;
+                            try {
+                                writer = new FileWriter(file);
+                                writer.write("");//清空原文件内容
+                                writer.write(textArea.getText());
+                                writer.flush();
+                                writer.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                   // System.out.println("save");
+                } else if (result.get() == buttonDoNotSave) {
+                   // System.out.println("do not save");
+                } else if (result.get() == buttonCancel) {
+                    event.consume();//阻止窗口关闭事件
+                   // System.out.println("cancel");
+                }
+
+                //System.out.println("文件未保存");
+            }
+
+
+        });
+        return false;
+    }
 
     public void SaveFile() {
         MenuItem saveMenuItem = new MenuItem("保存");
