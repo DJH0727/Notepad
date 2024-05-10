@@ -572,6 +572,8 @@ class EditMenu
     Button cancelButton = new Button("取消");
     CheckBox caseSensitive =  new CheckBox("区分大小写");
     CheckBox Word =  new CheckBox("全词匹配");
+    GridPane gridPane = new GridPane();;
+
 
     //查找功能就地取材，按照IDEA查找功能写的
     public  void Find()
@@ -580,37 +582,28 @@ class EditMenu
         findMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+F"));
         //首先，创建一个 TextInputDialog 对话框，让用户输入搜索字符串。
         //然后，使用正则表达式在 TextArea 中搜索匹配的文本。
-        //如果找到匹配的文本，则将光标移动到该位置。
-        //如果没有找到匹配的文本，则弹出一个警告对话框。
-        //这个查找的初始位置以光标为准，上一个和下一个都是光标的前后（或者选中的文本）
+
 
         findMenuItem.setOnAction(event -> {
 
 
 
-            if(textArea.getSelectedText() != null)
-            {
-                searchField.setText(textArea.getSelectedText());
-            }
-
-            //网格布局
-            GridPane gridPane = new GridPane();
-            gridPane.setPadding(new Insets(10, 10, 10, 10));
-            gridPane.setVgap(10);
-            gridPane.setHgap(10);
-            gridPane.add(searchField, 0, 0);
-            gridPane.add(prevButton, 1, 0);
-            gridPane.add(nextButton, 2, 0);
-            gridPane.add(caseSensitive, 3, 0);
-            gridPane.add(Word, 4, 0);
-            gridPane.add(cancelButton, 6, 0);
-            gridPane.setAlignment(Pos.CENTER);
             //已经打开了查找框，则不再打开新的
-            if(!isFind)
-            {
+            if(!isFind) {
+                gridPane = new GridPane();
+                gridPane.setPadding(new Insets(10, 10, 10, 10));
+                gridPane.setVgap(10);
+                gridPane.setHgap(10);
+                gridPane.add(searchField, 0, 0);
+                gridPane.add(prevButton, 1, 0);
+                gridPane.add(nextButton, 2, 0);
+                gridPane.add(caseSensitive, 3, 0);
+                gridPane.add(Word, 4, 0);
+                gridPane.add(cancelButton, 5, 0);
+                gridPane.setAlignment(Pos.CENTER);
                 currentTopBox.getChildren().add(gridPane);
-                isFind=true;
-                currentSearchField=searchField;
+                isFind = true;
+                currentSearchField = searchField;
             }
             //更新查找框的文本为选中的文本
             if(currentSearchField!=null)
@@ -621,33 +614,10 @@ class EditMenu
 
             //如果选中文本开启查找，则设置初值
             if (!textArea.getSelectedText().isEmpty()) {
+                searchField.setText(textArea.getSelectedText());
                 lastMatchStart = textArea.getSelection().getStart();
                 lastMatchEnd = textArea.getSelection().getEnd();
             }
-
-            //监听搜索框的变化，重置currentIndex
-            searchField.textProperty().addListener(new ChangeListener<String>() {
-                @Override
-                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                    FindIfChange();
-
-                    //System.out.println("searchField Change");
-                }
-            });
-            Word.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    FindFirst();
-                }
-            });
-            caseSensitive.selectedProperty().addListener(new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                    FindFirst();
-                }
-            });
-
-
 
             prevButton.setOnAction(OnEvent->{//查找上一个
 
@@ -675,82 +645,6 @@ class EditMenu
     }
 
 
-    public void FindIfChange()
-    {
-        if (!textArea.getSelectedText().isEmpty()) {
-
-
-            String searchText = searchField.getText();
-            String initText=searchText;
-            // 如果选择了全词匹配
-            if (Word.isSelected())
-                searchText = "\\b" + searchText + "\\b";
-            // 如果选择了区分大小写
-            Pattern pattern;
-            if(caseSensitive.isSelected())
-                pattern= Pattern.compile(searchText);
-            else
-                pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(textArea.getSelectedText());
-            System.out.println("searchText: "+initText+" "+textArea.getSelectedText());
-
-            if ((!matcher.find())||!textArea.getSelectedText().equals(initText)) {
-                System.out.println("没有找到匹配的文本!");
-                boolean n= FindNext();
-                boolean b=false;
-                if(!n)b=FindBefore();
-                System.out.println("next:"+n+" before:"+b);
-                if(!b&&!n)FindFirst();
-                System.out.println("lastMatch:"+lastMatchStart+" "+lastMatchEnd);
-                System.out.println("currentStart:"+currentStart);
-                System.out.println();
-            }
-
-        }
-        else {
-            System.out.println("没有选中文本!");
-            boolean n= FindNext();
-            boolean b=false;
-            if(!n)b=FindBefore();
-            System.out.println("next:"+n+" before:"+b);
-            if(!b&&!n)FindFirst();
-            System.out.println("lastMatch:"+lastMatchStart+" "+lastMatchEnd);
-            System.out.println("currentStart:"+currentStart);
-            System.out.println();
-        }
-    }
-
-
-    public  void FindFirst()
-    {
-        lastMatchStart = -1;
-        lastMatchEnd = -1;
-        currentStart=-1;
-        String searchText = searchField.getText();
-
-        // 如果选择了全词匹配
-        if (Word.isSelected())
-            searchText = "\\b" + searchText + "\\b";
-        // 如果选择了区分大小写
-        Pattern pattern;
-        if(caseSensitive.isSelected())
-            pattern= Pattern.compile(searchText);
-        else
-            pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(textArea.getText());
-
-        //如果选中文本开启查找，则设置初值
-        if (matcher.find()) {
-            lastMatchStart = textArea.getSelection().getStart();
-            lastMatchEnd = textArea.getSelection().getEnd();
-            textArea.selectRange(lastMatchStart, lastMatchEnd);
-            currentStart=lastMatchStart;
-            //System.out.println("lastMatchStart: "+lastMatchStart);
-            return;
-        }
-
-
-    }
 
     int lastMatchStart = -1;
     int lastMatchEnd = -1;
@@ -771,7 +665,7 @@ class EditMenu
         }
 
         String searchText = searchField.getText();
-
+        searchText=Pattern.quote(searchText);
         // 如果选择了全词匹配
         if (Word.isSelected())
             searchText = "\\b" + searchText + "\\b";
@@ -843,7 +737,7 @@ class EditMenu
             currentStart = textArea.getCaretPosition();
         }
         String searchText = searchField.getText();
-
+        searchText=Pattern.quote(searchText);
         // 如果选择了全词匹配
         if (Word.isSelected())
             searchText = "\\b" + searchText + "\\b";
@@ -894,13 +788,101 @@ class EditMenu
         return false;
     }
 
-
+    Button replaceButton = new Button("替换");
+    Button replaceAllButton = new Button("全部替换");
+    TextField replaceField = new TextField();
 
     public  void Replace() {
         MenuItem replaceMenuItem = new MenuItem("替换");
-        replaceMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+H"));
+        replaceMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+R"));
+
+        replaceMenuItem.setOnAction(event -> {
 
 
+
+            //已经打开了查找框，则不再打开新的
+            if(!isFind) {
+                gridPane = new GridPane();
+                gridPane.setPadding(new Insets(10, 10, 10, 10));
+                gridPane.setVgap(10);
+                gridPane.setHgap(10);
+                gridPane.add(searchField, 0, 0);
+                gridPane.add(prevButton, 1, 0);
+                gridPane.add(nextButton, 2, 0);
+                gridPane.add(caseSensitive, 3, 0);
+                gridPane.add(Word, 4, 0);
+                gridPane.add(cancelButton, 5, 0);
+                gridPane.add(replaceField, 0, 1);
+                gridPane.add(replaceButton, 1, 1);
+                gridPane.add(replaceAllButton, 2, 1);
+                gridPane.setAlignment(Pos.CENTER);
+                currentTopBox.getChildren().add(gridPane);
+                isFind = true;
+                currentSearchField = searchField;
+            }
+            //更新查找框的文本为选中的文本
+            if(currentSearchField!=null)
+            {
+                currentSearchField.setText(textArea.getSelectedText());
+            }
+
+
+            //如果选中文本开启查找，则设置初值
+            if (!textArea.getSelectedText().isEmpty()) {
+                searchField.setText(textArea.getSelectedText());
+                lastMatchStart = textArea.getSelection().getStart();
+                lastMatchEnd = textArea.getSelection().getEnd();
+            }
+
+            prevButton.setOnAction(OnEvent->{//查找上一个
+
+                FindBefore();
+
+
+            });
+            nextButton.setOnAction(OnEvent->{//查找下一个
+
+                FindNext();
+
+            });
+            cancelButton.setOnAction(OnEvent->{
+                currentTopBox.getChildren().remove(gridPane);
+                currentStart=-1;
+                isFind=false;
+            });
+            replaceButton.setOnAction(OnEvent-> {//替换
+
+                String replaceText = replaceField.getText();
+                if(lastMatchStart!=lastMatchEnd) textArea.replaceText(lastMatchStart, lastMatchEnd, replaceText);
+                FindNext();
+
+
+
+            });
+            replaceAllButton.setOnAction(OnEvent-> {//替换全部
+
+                String searchText = searchField.getText();
+                searchText=Pattern.quote(searchText);
+                // 如果选择了全词匹配
+                if (Word.isSelected())
+                    searchText = "\\b" + searchText + "\\b";
+                // 如果选择了区分大小写
+                Pattern pattern;
+                if(caseSensitive.isSelected())
+                    pattern= Pattern.compile(searchText);
+                else
+                    pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+
+                Matcher matcher = pattern.matcher(textArea.getText());
+                String replacedText = matcher.replaceAll(replaceField.getText());
+
+                textArea.setText(replacedText);
+            });
+
+
+
+
+        });
 
         editMenu.getItems().add(replaceMenuItem);
     }
