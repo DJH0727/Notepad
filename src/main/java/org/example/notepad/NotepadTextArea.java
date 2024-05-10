@@ -33,7 +33,7 @@ public class NotepadTextArea {
         //设置字体大小
         textArea.setFont(new Font(15));
         //设置字体颜色
-        textArea.setStyle("-fx-text-fill: red;");
+        textArea.setStyle("-fx-text-fill: black;");
     }
 
     public TextArea getTextArea() {
@@ -46,16 +46,19 @@ public class NotepadTextArea {
 
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-               if(file!=null)
-                    if(textArea.getText().equals(SavedText))
-                    {
+                if (file != null){
+                    if (textArea.getText().equals(SavedText)) {
                         stage.setTitle(file.getName());
+                    } else {
+                        stage.setTitle("*" + file.getName());
                     }
-                    else
-                    {
-                        stage.setTitle("*"+file.getName());
-
+                 } else {
+                    if (textArea.getText().equals(SavedText)) {
+                        stage.setTitle("Notepad");
+                    } else {
+                        stage.setTitle("*" + "Notepad");
                     }
+                 }
                 //System.out.println("changed");
             }
         });

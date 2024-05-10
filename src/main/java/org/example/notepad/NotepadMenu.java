@@ -1,12 +1,16 @@
 package org.example.notepad;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -389,22 +393,42 @@ class EditMenu
         this.textArea =  notepadTextArea.getTextArea();
         editMenu = new Menu("编辑");
         // 创建二级菜单
-        MenuItem undoMenuItem = new MenuItem("撤销");
-        editMenu.getItems().add(undoMenuItem);
-        Cut();
-        Copy();
-        Paste();
-        Delete();
-        MenuItem findMenuItem = new MenuItem("查找");
-        editMenu.getItems().add(findMenuItem);
-        MenuItem replaceMenuItem = new MenuItem("替换");
-        editMenu.getItems().add(replaceMenuItem);
-        GoTo();
-        SelectAll();
-        TimeDate();
+        Undo();//撤销
+        Redo();//重做
+        Cut();//剪切
+        Copy();//复制
+        Paste();//粘贴
+        Delete();//删除
+        Find();//查找
+        Replace();//替换
+        GoTo();//转到
+        SelectAll();//全选
+        TimeDate();//时间日期
 
     }
 
+
+    public void Undo()
+    {
+        MenuItem undoMenuItem = new MenuItem("撤销");
+        undoMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+Z"));
+        undoMenuItem.setOnAction(event -> {
+            textArea.undo();
+        });
+
+        editMenu.getItems().add(undoMenuItem);
+
+    }
+    public void Redo()
+    {
+        MenuItem redoMenuItem = new MenuItem("重做");
+        redoMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+Y"));
+        redoMenuItem.setOnAction(event -> {
+            textArea.redo();
+        });
+
+        editMenu.getItems().add(redoMenuItem);
+    }
 
     public void Cut()
     {
@@ -518,6 +542,72 @@ class EditMenu
 
 
 
+    }
+
+
+    public  void Find()
+    {
+        MenuItem findMenuItem = new MenuItem("查找");
+        findMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+F"));
+        //首先，创建一个 TextInputDialog 对话框，让用户输入搜索字符串。
+        //然后，使用正则表达式在 TextArea 中搜索匹配的文本。
+        //如果找到匹配的文本，则将光标移动到该位置。
+        //如果没有找到匹配的文本，则弹出一个警告对话框。
+        //使用事件处理器？
+
+        findMenuItem.setOnAction(event -> {
+
+            Stage primaryStage = new Stage();
+            primaryStage.setTitle("查找");
+            TextField searchField = new TextField();
+            Button prevButton = new Button("查找上一个");
+            Button nextButton = new Button("查找下一个");
+           // Button cancelButton = new Button("取消");
+            CheckBox caseSensitive =  new CheckBox("区分大小写");
+            //监听文本框内容
+
+
+            prevButton.setOnAction(OnEvent->{
+
+
+            System.out.println("查找上一个"+searchField.getText()+caseSensitive.isSelected());
+
+            });
+            nextButton.setOnAction(OnEvent->{
+
+                System.out.println("查找下一个"+searchField.getText()+caseSensitive.isSelected());
+            });
+
+
+            GridPane gridPane = new GridPane();
+            gridPane.setPadding(new Insets(10, 10, 10, 10));
+            gridPane.setVgap(5);
+            gridPane.setHgap(5);
+            gridPane.add(searchField, 0, 0);
+            gridPane.add(prevButton, 1, 0);
+            gridPane.add(nextButton, 2, 0);
+            gridPane.add(caseSensitive, 0, 1);
+            //gridPane.add(cancelButton, 3, 1);
+            gridPane.setAlignment(Pos.CENTER);
+            Scene scene = new Scene(gridPane, 400, 100);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+
+        });
+
+
+        editMenu.getItems().add(findMenuItem);
+
+    }
+
+    public  void Replace() {
+        MenuItem replaceMenuItem = new MenuItem("替换");
+        replaceMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+H"));
+
+
+
+        editMenu.getItems().add(replaceMenuItem);
     }
     public void GoTo()
     {
