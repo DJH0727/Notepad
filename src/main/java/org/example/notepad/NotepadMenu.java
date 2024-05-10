@@ -68,8 +68,13 @@ public class NotepadMenu {
     }
     public void initFileMenu(Stage stage,File file)
     {
-
+        //顺便也初始化编辑菜单的stage
+        editmenu.setCurrentStage(stage);
         filemenu.initFileMenu(stage,file);
+    }
+
+    public void initEditMenu(VBox vbox) {
+        editmenu.initEditMenu(vbox);
     }
 
 
@@ -387,9 +392,16 @@ class EditMenu
     Menu editMenu ;
 
     TextArea textArea;
+     Stage currentStage;
+
+
+    public void setCurrentStage(Stage currentStage) {
+        this.currentStage = currentStage;
+    }
 
     public EditMenu(NotepadTextArea notepadTextArea )
     {
+
         this.textArea =  notepadTextArea.getTextArea();
         editMenu = new Menu("编辑");
         // 创建二级菜单
@@ -545,6 +557,23 @@ class EditMenu
     }
 
 
+    boolean isFind = false;
+    TextField currentSearchField;
+    VBox currentTopBox;
+    public void initEditMenu(VBox vbox) {
+        this.currentTopBox=vbox;
+    }
+    long currentIndex=0;
+    long totalCount=0;
+
+    TextField searchField = new TextField();
+    Button prevButton = new Button("查找上一个");
+    Button nextButton = new Button("查找下一个");
+    Button cancelButton = new Button("取消");
+    CheckBox caseSensitive =  new CheckBox("区分大小写");
+    CheckBox Word =  new CheckBox("全词匹配");
+
+    //查找功能就地取材，按照IDEA查找功能写的
     public  void Find()
     {
         MenuItem findMenuItem = new MenuItem("查找");
@@ -553,45 +582,89 @@ class EditMenu
         //然后，使用正则表达式在 TextArea 中搜索匹配的文本。
         //如果找到匹配的文本，则将光标移动到该位置。
         //如果没有找到匹配的文本，则弹出一个警告对话框。
-        //使用事件处理器？
+        //这个查找的初始位置以光标为准，上一个和下一个都是光标的前后（或者选中的文本）
 
         findMenuItem.setOnAction(event -> {
 
-            Stage primaryStage = new Stage();
-            primaryStage.setTitle("查找");
-            TextField searchField = new TextField();
-            Button prevButton = new Button("查找上一个");
-            Button nextButton = new Button("查找下一个");
-           // Button cancelButton = new Button("取消");
-            CheckBox caseSensitive =  new CheckBox("区分大小写");
-            //监听文本框内容
 
 
-            prevButton.setOnAction(OnEvent->{
+            if(textArea.getSelectedText() != null)
+            {
+                searchField.setText(textArea.getSelectedText());
+            }
 
-
-            System.out.println("查找上一个"+searchField.getText()+caseSensitive.isSelected());
-
-            });
-            nextButton.setOnAction(OnEvent->{
-
-                System.out.println("查找下一个"+searchField.getText()+caseSensitive.isSelected());
-            });
-
-
+            //网格布局
             GridPane gridPane = new GridPane();
             gridPane.setPadding(new Insets(10, 10, 10, 10));
-            gridPane.setVgap(5);
-            gridPane.setHgap(5);
+            gridPane.setVgap(10);
+            gridPane.setHgap(10);
             gridPane.add(searchField, 0, 0);
             gridPane.add(prevButton, 1, 0);
             gridPane.add(nextButton, 2, 0);
-            gridPane.add(caseSensitive, 0, 1);
-            //gridPane.add(cancelButton, 3, 1);
+            gridPane.add(caseSensitive, 3, 0);
+            gridPane.add(Word, 4, 0);
+            gridPane.add(cancelButton, 6, 0);
             gridPane.setAlignment(Pos.CENTER);
-            Scene scene = new Scene(gridPane, 400, 100);
-            primaryStage.setScene(scene);
-            primaryStage.show();
+            //已经打开了查找框，则不再打开新的
+            if(!isFind)
+            {
+                currentTopBox.getChildren().add(gridPane);
+                isFind=true;
+                currentSearchField=searchField;
+            }
+            //更新查找框的文本为选中的文本
+            if(currentSearchField!=null)
+            {
+                currentSearchField.setText(textArea.getSelectedText());
+            }
+
+
+            //如果选中文本开启查找，则设置初值
+            if (!textArea.getSelectedText().isEmpty()) {
+                lastMatchStart = textArea.getSelection().getStart();
+                lastMatchEnd = textArea.getSelection().getEnd();
+            }
+
+            //监听搜索框的变化，重置currentIndex
+            searchField.textProperty().addListener(new ChangeListener<String>() {
+                @Override
+                public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                    FindIfChange();
+
+                    //System.out.println("searchField Change");
+                }
+            });
+            Word.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    FindFirst();
+                }
+            });
+            caseSensitive.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                    FindFirst();
+                }
+            });
+
+
+
+            prevButton.setOnAction(OnEvent->{//查找上一个
+
+                FindBefore();
+
+
+            });
+            nextButton.setOnAction(OnEvent->{//查找下一个
+
+                FindNext();
+
+            });
+            cancelButton.setOnAction(OnEvent->{
+                currentTopBox.getChildren().remove(gridPane);
+                currentStart=-1;
+                isFind=false;
+            });
 
 
         });
@@ -600,6 +673,228 @@ class EditMenu
         editMenu.getItems().add(findMenuItem);
 
     }
+
+
+    public void FindIfChange()
+    {
+        if (!textArea.getSelectedText().isEmpty()) {
+
+
+            String searchText = searchField.getText();
+            String initText=searchText;
+            // 如果选择了全词匹配
+            if (Word.isSelected())
+                searchText = "\\b" + searchText + "\\b";
+            // 如果选择了区分大小写
+            Pattern pattern;
+            if(caseSensitive.isSelected())
+                pattern= Pattern.compile(searchText);
+            else
+                pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(textArea.getSelectedText());
+            System.out.println("searchText: "+initText+" "+textArea.getSelectedText());
+
+            if ((!matcher.find())||!textArea.getSelectedText().equals(initText)) {
+                System.out.println("没有找到匹配的文本!");
+                boolean n= FindNext();
+                boolean b=false;
+                if(!n)b=FindBefore();
+                System.out.println("next:"+n+" before:"+b);
+                if(!b&&!n)FindFirst();
+                System.out.println("lastMatch:"+lastMatchStart+" "+lastMatchEnd);
+                System.out.println("currentStart:"+currentStart);
+                System.out.println();
+            }
+
+        }
+        else {
+            System.out.println("没有选中文本!");
+            boolean n= FindNext();
+            boolean b=false;
+            if(!n)b=FindBefore();
+            System.out.println("next:"+n+" before:"+b);
+            if(!b&&!n)FindFirst();
+            System.out.println("lastMatch:"+lastMatchStart+" "+lastMatchEnd);
+            System.out.println("currentStart:"+currentStart);
+            System.out.println();
+        }
+    }
+
+
+    public  void FindFirst()
+    {
+        lastMatchStart = -1;
+        lastMatchEnd = -1;
+        currentStart=-1;
+        String searchText = searchField.getText();
+
+        // 如果选择了全词匹配
+        if (Word.isSelected())
+            searchText = "\\b" + searchText + "\\b";
+        // 如果选择了区分大小写
+        Pattern pattern;
+        if(caseSensitive.isSelected())
+            pattern= Pattern.compile(searchText);
+        else
+            pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(textArea.getText());
+
+        //如果选中文本开启查找，则设置初值
+        if (matcher.find()) {
+            lastMatchStart = textArea.getSelection().getStart();
+            lastMatchEnd = textArea.getSelection().getEnd();
+            textArea.selectRange(lastMatchStart, lastMatchEnd);
+            currentStart=lastMatchStart;
+            //System.out.println("lastMatchStart: "+lastMatchStart);
+            return;
+        }
+
+
+    }
+
+    int lastMatchStart = -1;
+    int lastMatchEnd = -1;
+    int currentStart=-1;
+    public boolean FindBefore() {
+
+
+        if(currentStart==-1)
+        {
+            currentStart = textArea.getCaretPosition();
+        }
+        if(!textArea.getSelectedText().isEmpty())
+        {
+            currentStart = textArea.getSelection().getStart();
+        }
+        else {
+            currentStart = textArea.getCaretPosition();
+        }
+
+        String searchText = searchField.getText();
+
+        // 如果选择了全词匹配
+        if (Word.isSelected())
+            searchText = "\\b" + searchText + "\\b";
+        // 如果选择了区分大小写
+        Pattern pattern;
+        if(caseSensitive.isSelected())
+            pattern= Pattern.compile(searchText);
+        else
+            pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+
+        Matcher matcher = pattern.matcher(textArea.getText());
+        totalCount=matcher.results().count();
+        if(totalCount==0)
+        {
+            currentStart=-1;
+            textArea.selectRange(0, 0);
+            return false;
+        }
+
+        matcher.reset();
+
+        // 保存上一个匹配的位置
+
+
+        // 查找所有匹配的文本
+        while(matcher.find()) {
+            // 如果当前匹配的位置超过了光标的位置，那么就选中上一个匹配的文本
+           // System.out.println("matcher.start: "+matcher.start()+" currentStart"+currentStart);
+            if(matcher.start() >= currentStart) {
+                if(lastMatchStart != -1 && lastMatchEnd != -1) {
+                    textArea.selectRange(lastMatchStart, lastMatchEnd);
+                    currentStart=lastMatchStart;
+                   // System.out.println("lastMatchStart: "+lastMatchStart);
+                }
+                return true;
+            }
+
+            // 更新上一个匹配的位置
+            lastMatchStart = matcher.start();
+            lastMatchEnd = matcher.end();
+        }
+
+        // 如果没有找到更多的匹配，那么就选中最后一个匹配的文本
+        if(lastMatchStart != -1 && lastMatchEnd != -1) {
+            textArea.selectRange(lastMatchStart, lastMatchEnd);
+            currentStart=lastMatchStart;
+
+           // System.out.println("lastMatch: "+lastMatchStart+" "+lastMatchEnd);
+        }
+
+        return false;
+
+    }
+
+
+    public boolean FindNext()
+    {
+
+
+        if(currentStart==-1)
+        {
+            currentStart = textArea.getCaretPosition();
+        }
+        if(!textArea.getSelectedText().isEmpty())
+        {
+            currentStart = textArea.getSelection().getEnd();
+        }
+        else {
+            currentStart = textArea.getCaretPosition();
+        }
+        String searchText = searchField.getText();
+
+        // 如果选择了全词匹配
+        if (Word.isSelected())
+            searchText = "\\b" + searchText + "\\b";
+        // 如果选择了区分大小写
+        Pattern pattern;
+        if(caseSensitive.isSelected())
+            pattern= Pattern.compile(searchText);
+        else
+            pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+
+        Matcher matcher = pattern.matcher(textArea.getText());
+        totalCount=matcher.results().count();
+        if(totalCount==0)
+        {
+            currentStart=-1;
+            textArea.selectRange(0, 0);
+            return false;
+        }
+
+        matcher.reset();
+
+        while(matcher.find()) {
+            // 如果当前匹配的位置超过了光标的位置，那么就选中上一个匹配的文本
+            //System.out.println("matcher.start: "+matcher.start()+" currentStart"+currentStart);
+            if(matcher.start() >= currentStart) {
+                if(lastMatchStart != -1 && lastMatchEnd != -1) {
+                    lastMatchStart = matcher.start();
+                    lastMatchEnd = matcher.end();
+                    textArea.selectRange(lastMatchStart, lastMatchEnd);
+                    currentStart=lastMatchEnd;
+                    //System.out.println("lastMatchStart: "+lastMatchStart);
+                }
+                return true;
+            }
+
+            // 更新上一个匹配的位置
+
+        }
+
+        // 如果没有找到更多的匹配，那么就选中最后一个匹配的文本
+        if(lastMatchStart != -1 && lastMatchEnd != -1) {
+            textArea.selectRange(lastMatchStart, lastMatchEnd);
+            currentStart=lastMatchStart;
+
+           // System.out.println("lastMatch: "+lastMatchStart+" "+lastMatchEnd);
+        }
+
+        return false;
+    }
+
+
 
     public  void Replace() {
         MenuItem replaceMenuItem = new MenuItem("替换");
@@ -735,8 +1030,6 @@ class EditMenu
     {
         return editMenu;
     }
-
-
 
 
 

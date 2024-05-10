@@ -22,9 +22,11 @@ public class NotepadTextArea {
     String SavedText;
 
     File file;
+
     public void setFile(File file) {
         this.file = file;
     }
+
     public NotepadTextArea() {
 
         textArea = new TextArea();
@@ -41,6 +43,7 @@ public class NotepadTextArea {
     }
 //检测是否有修改,如果有修改而且没有保存,则显示星号
     public void CheckSave(Stage stage) {
+
 
         textArea.textProperty().addListener(new ChangeListener<String>() {
 

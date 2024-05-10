@@ -21,7 +21,6 @@ public class Main extends Application {
 
     public static void main(String[] args)
     {
-
         launch(args);
     }
     @Override
@@ -30,9 +29,6 @@ public class Main extends Application {
         File file=null;
 
         primaryStage.setTitle("Notepad");
-
-
-
 
         NotepadTextArea notepadTextArea;
         NotepadMenu notepadMenu;
@@ -53,9 +49,9 @@ public class Main extends Application {
 
 
         // 设置布局
-        //VBox vBox = new VBox(menuBar, textArea, statusBarHBox);
+        VBox MenuBox = new VBox(menuBar);
         borderPane = new BorderPane();
-        borderPane.setTop(menuBar);
+        borderPane.setTop(MenuBox);
         borderPane.setCenter(textArea);
         borderPane.setBottom(statusBarHBox);
         //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
@@ -68,11 +64,11 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         //传入stage
         notepadMenu.initFileMenu(primaryStage,file);
+        notepadMenu.initEditMenu(MenuBox);
         notepadMenu.filemenu.CheckIfSave();//是否保存
 
 
         notepadTextArea.setFile(file);
-
         notepadTextArea.CheckSave(primaryStage);
         primaryStage.show();
     }
@@ -122,9 +118,9 @@ public class Main extends Application {
 
 
         // 设置布局
-        //VBox vBox = new VBox(menuBar, textArea, statusBarHBox);
+        VBox MenuBox = new VBox(menuBar);
         borderPane = new BorderPane();
-        borderPane.setTop(menuBar);
+        borderPane.setTop(MenuBox);
         borderPane.setCenter(textArea);
         borderPane.setBottom(statusBarHBox);
         //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
@@ -138,6 +134,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         //传入stage
         notepadMenu.initFileMenu(primaryStage,file);
+        notepadMenu.initEditMenu(MenuBox);
         notepadMenu.filemenu.CheckIfSave();//是否保存
 
         notepadTextArea.setFile(file);

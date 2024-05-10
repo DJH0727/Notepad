@@ -321,8 +321,70 @@ public void CheckIfSave()
 ```
 ~~越写越乱，都快不知道自己在写什么了；增加一个功能就会出现若干bug~~
 
+## 2024-05-10
+
+- 研究了半天怎么打包程序，虽然还有功能没写完）
+
+  遇到的问题和解决方法[https://blog.csdn.net/qq_52144300/article/details/125224207]
+- 增加了查找功能，功能基本按照IDEA的查找功能实现
+- 查找和替换应该是最难写的了,~~要不写一起算了，好麻烦~~
+
+### 查找(废案)
+```
+public void find(boolean Type,TextField searchField,CheckBox caseSensitive,CheckBox word,CheckBox regex)
+    {
+        String searchText = searchField.getText();
 
 
+        // 如果选择了正则表达式
+        if(!regex.isSelected())
+                 searchText = Pattern.quote(searchText);
+        // 如果选择了全词匹配
+        if (word.isSelected()) {
+            searchText = "\\b" + searchText + "\\b";
+        }
+
+
+        Pattern pattern;
+        if(caseSensitive.isSelected())
+            pattern= Pattern.compile(searchText);
+        else
+            pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(textArea.getText());
+        totalCount=matcher.results().count();
+        //System.out.println("总共找到"+totalCount+"个匹配");
+
+
+        if(!Type) {
+            if (currentIndex < totalCount) currentIndex++;
+            //System.out.println("查找下一个");
+        }
+            else
+        {
+            if(currentIndex>1)currentIndex--;
+           // System.out.println("查找上一个");
+        }
+        matcher.reset();
+
+
+        int cnt=0;
+        while (matcher.find()) {
+
+            cnt++;
+            if(cnt==currentIndex)
+            {
+                textArea.positionCaret(matcher.start());
+
+                textArea.selectRange(matcher.start(), matcher.end());
+
+                break;
+            }
+
+        }
+    }
+
+```
+- 之前的代码有点啸问题，推翻重写了，被硬控四个小时
 
 
 
