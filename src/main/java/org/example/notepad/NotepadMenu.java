@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +56,7 @@ import java.util.regex.Pattern;
     自动换行  WrapTextMenuItem
 */
 public class NotepadMenu {
+
     private MenuBar menuBar;//菜单栏
 
     TextArea textArea;//文本框
@@ -61,7 +64,6 @@ public class NotepadMenu {
     EditMenu editmenu;//编辑菜单
     ViewMenu viewmenu;//视图菜单
     HelpMenu helpmenu;//帮助菜单
-    File file;//打开的文件
     public void setBorderPane(BorderPane borderPane,NotepadStatusBar bar) {
 
         this.viewmenu.initViewMenu(borderPane,bar);
@@ -186,7 +188,8 @@ class FileMenu
                     main.newStage(openedfile,Newstage);
 
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger logger = Logger.getLogger(Main.class.getName());
+                    logger.log(Level.SEVERE, "Error in OpenFile()", e);
                 }
             }
         });
@@ -229,7 +232,8 @@ class FileMenu
                             writer.flush();
                             writer.close();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Logger logger = Logger.getLogger(Main.class.getName());
+                            logger.log(Level.SEVERE, "Error in CheckIfSave()", e);
                         }
                     }
                     else {
@@ -250,13 +254,15 @@ class FileMenu
                                 writer.flush();
                                 writer.close();
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                Logger logger = Logger.getLogger(Main.class.getName());
+                                logger.log(Level.SEVERE, "Error in CheckIfSave()", e);
                             }
                         }
                     }
 
                    // System.out.println("save");
                 } else if (result.get() == buttonDoNotSave) {
+
                    // System.out.println("do not save");
                 } else if (result.get() == buttonCancel) {
                     event.consume();//阻止窗口关闭事件
@@ -290,7 +296,8 @@ class FileMenu
                     writer.flush();
                     writer.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger logger = Logger.getLogger(Main.class.getName());
+                    logger.log(Level.SEVERE, "Error in SaveFile()", e);
                 }
             }
             else {
@@ -316,7 +323,8 @@ class FileMenu
                         writer.flush();
                         writer.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Logger logger = Logger.getLogger(Main.class.getName());
+                        logger.log(Level.SEVERE, "Error in SaveFile()", e);
                     }
                 }
             }
@@ -357,7 +365,8 @@ class FileMenu
                     writer.flush();
                     writer.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger logger = Logger.getLogger(Main.class.getName());
+                    logger.log(Level.SEVERE, "Error in SaveAsFile()", e);
                 }
             }
 
@@ -458,7 +467,8 @@ class EditMenu
             });
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.SEVERE, "Error in Cut()", e);
         }
         editMenu.getItems().add(CutMenuItem);
     }
@@ -485,7 +495,8 @@ class EditMenu
 
        }
        catch (Exception e) {
-           e.printStackTrace();
+           Logger logger = Logger.getLogger(Main.class.getName());
+           logger.log(Level.SEVERE, "Error in Copy()", e);
        }
         editMenu.getItems().add(copyMenuItem);
     }
@@ -507,7 +518,7 @@ class EditMenu
                     final Clipboard clipboard = Clipboard.getSystemClipboard();
                     // 获取剪贴板中的内容
                     String text = clipboard.getString();
-                    // 检查是否有选中的文本,好想默认都有选中？，检查lenth为0才行
+                    // 检查是否有选中的文本,好想默认都有选中？，检查文本长度为0才行
                     if (textArea.getSelectedText().isEmpty()) {
                         // 在光标处插入文本
                         textArea.insertText(textArea.getCaretPosition(), text);
@@ -518,8 +529,9 @@ class EditMenu
                     }
                     //System.out.println("粘贴板中的文本: " + text);
                 } catch (Exception e) {
-                    System.out.println("只能粘贴文本!");
-                    e.printStackTrace();
+                    //System.out.println("只能粘贴文本!");
+                    Logger logger = Logger.getLogger(Main.class.getName());
+                    logger.log(Level.SEVERE, "Error in Paste()", e);
                 }
             });
         });
@@ -572,7 +584,7 @@ class EditMenu
     Button cancelButton = new Button("取消");
     CheckBox caseSensitive =  new CheckBox("区分大小写");
     CheckBox Word =  new CheckBox("全词匹配");
-    GridPane gridPane = new GridPane();;
+    GridPane gridPane = new GridPane();
 
 
     //查找功能就地取材，按照IDEA查找功能写的
@@ -853,7 +865,7 @@ class EditMenu
             replaceButton.setOnAction(OnEvent-> {//替换
 
                 String replaceText = replaceField.getText();
-                if(lastMatchStart!=lastMatchEnd) textArea.replaceText(lastMatchStart, lastMatchEnd, replaceText);
+                if(lastMatchStart!=lastMatchEnd) textArea.replaceSelection(replaceText);
                 FindNext();
 
 
@@ -875,8 +887,8 @@ class EditMenu
 
                 Matcher matcher = pattern.matcher(textArea.getText());
                 String replacedText = matcher.replaceAll(replaceField.getText());
-
-                textArea.setText(replacedText);
+                textArea.selectAll();
+                textArea.replaceSelection(replacedText);
             });
 
 
@@ -896,10 +908,9 @@ class EditMenu
             while (true) {
                 try {
                     //获取当前光标位置行号
-                    Integer currentLine = textArea.getText(0, textArea.getCaretPosition()).split("\n",-1).length;
-                    int line = currentLine;
+                    int line = textArea.getText(0, textArea.getCaretPosition()).split("\n",-1).length;
                     //System.out.println("当前行号：" + currentLine);
-                    TextInputDialog dialog = new TextInputDialog(currentLine.toString());
+                    TextInputDialog dialog = new TextInputDialog(Integer.toString(line));
                     dialog.setTitle("跳转到指定行号");
                     dialog.setHeaderText(null);
                     dialog.setContentText("请输入行号:");
@@ -924,7 +935,7 @@ class EditMenu
 
                     //int caretPosition = textArea.getCaretPosition();
                     String[] str = textArea.getText().split("\n",-1);
-                    //conut个换行符，说明有count+1行
+                    //有 count 个换行符，说明有count+1行
                     Pattern pattern = Pattern.compile("\n");
                     Matcher matcher = pattern.matcher(textArea.getText());
                     int count = 1;
@@ -933,8 +944,6 @@ class EditMenu
                     }
                     //如果输入的行号不合法，则提示错误
                     if (line > count || line < 1) {
-
-
                         throw new Exception();
                     }
 
@@ -955,7 +964,7 @@ class EditMenu
                     alert.setContentText("请输入正确的行号!");
                     alert.showAndWait();
                    // System.out.println("请输入正确的行号!!!");
-                    //e1.printStackTrace();
+
                 }
 
             }
@@ -978,7 +987,8 @@ class EditMenu
         });
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.SEVERE, "Error in SelectAll()", e);
         }
 
         editMenu.getItems().add(selectAllMenuItem);
@@ -1003,7 +1013,8 @@ class EditMenu
                             textArea.insertText(textArea.getCaretPosition(), text);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger logger = Logger.getLogger(Main.class.getName());
+                        logger.log(Level.SEVERE, "Error in TimeDate()", e);
                     }
         });
         editMenu.getItems().add(timeDateMenuItem);
@@ -1107,7 +1118,8 @@ class ViewMenu
                             textArea.appendText("\n");
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger logger = Logger.getLogger(Main.class.getName());
+                        logger.log(Level.SEVERE, "Error in Encoding()", e);
                     }
                 }
 

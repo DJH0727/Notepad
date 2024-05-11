@@ -1,20 +1,17 @@
 package org.example.notepad;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-
 import java.io.*;
+
+
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class Main extends Application {
 
@@ -43,10 +40,13 @@ public class Main extends Application {
         // 创建菜单
         notepadMenu = new NotepadMenu(notepadTextArea,file);
         MenuBar menuBar = notepadMenu.getMenuBar();
+
+        //menuBar.setStyle("-fx-background-color: Black;");
         // 创建状态栏
         statusBar = new NotepadStatusBar(notepadTextArea);
         HBox statusBarHBox = statusBar.getStatusBar();
 
+       // statusBarHBox.setStyle("-fx-background-color: Black;");
 
         // 设置布局
         VBox MenuBox = new VBox(menuBar);
@@ -96,14 +96,19 @@ public class Main extends Application {
         if(file!=null) {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(file), "UTF-8"))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    textArea.appendText(line);
-                    textArea.appendText("\n");
+                            new FileInputStream(file), StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                int c;
+                while ((c = reader.read()) != -1) {
+                    sb.append((char) c);
                 }
+                textArea.setText(sb.toString());
+
+
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger logger = Logger.getLogger(Main.class.getName());
+                logger.log(Level.SEVERE, "Error reading file", e);
             }
         }
 

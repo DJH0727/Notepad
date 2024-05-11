@@ -2,14 +2,19 @@ package org.example.notepad;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Insets;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.File;
 
 public class NotepadTextArea {
-    private TextArea textArea;
+     TextArea textArea;
 
     public String getSavedText() {
         return SavedText;
@@ -30,12 +35,13 @@ public class NotepadTextArea {
     public NotepadTextArea() {
 
         textArea = new TextArea();
+
         //自动换行
         textArea.setWrapText(true);
         //设置字体大小
         textArea.setFont(new Font(15));
         //设置字体颜色
-        textArea.setStyle("-fx-text-fill: black;");
+        textArea.setStyle("-fx-text-fill: black;-fx-control-inner-background: WHITE;");
     }
 
     public TextArea getTextArea() {

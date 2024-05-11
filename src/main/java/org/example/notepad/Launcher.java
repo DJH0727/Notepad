@@ -31,7 +31,7 @@ public class Launcher
                 pattern= Pattern.compile(searchText);
             else
                 pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
-            Matcher matcher = pattern.matcher(textArea.getSelectedText());
+            、Matcher matcher = pattern.matcher(textArea.getSelectedText());
             System.out.println("searchText: "+initText+" "+textArea.getSelectedText());
 
             if ((!matcher.find())||!textArea.getSelectedText().equals(initText)) {
@@ -75,7 +75,7 @@ public class Launcher
             pattern= Pattern.compile(searchText);
         else
             pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(textArea.getText());
+        。Matcher matcher = pattern.matcher(textArea.getText());
 
         //如果选中文本开启查找，则设置初值
         if (matcher.find()) {
