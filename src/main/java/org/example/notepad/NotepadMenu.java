@@ -1070,10 +1070,11 @@ class ViewMenu
     {
         MenuItem fontMenuItem = new MenuItem("字体");
         //fontMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+M"));
+        if(theme==null)
+            theme = new NotepadTheme(textArea);
 
         fontMenuItem.setOnAction(event -> {
-            if(theme==null)
-                     theme = new NotepadTheme(textArea);
+
             theme.showChangeStage(primaryStage);
 
         });
