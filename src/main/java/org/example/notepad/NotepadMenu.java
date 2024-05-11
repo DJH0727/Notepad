@@ -3,6 +3,7 @@ package org.example.notepad;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -1057,9 +1059,9 @@ class ViewMenu
 
         // 创建二级菜单
         ChangeFont();
+        //对齐方式
+        AlignText();
         Encoding();
-        MenuItem zoomMenuItem = new MenuItem("缩放");
-        viewMenu.getItems().add(zoomMenuItem);
         ShowStatusBar();
         WrapText();
     }
@@ -1080,6 +1082,59 @@ class ViewMenu
         });
         viewMenu.getItems().add(fontMenuItem);
 
+    }
+
+    public void AlignText()
+    {
+        Menu alignMenu = new Menu("对齐方式");
+        viewMenu.getItems().add(alignMenu);
+        ToggleGroup group = new ToggleGroup();
+
+        RadioMenuItem leftAlignMenuItem = new RadioMenuItem("左对齐");
+        group.getToggles().add(leftAlignMenuItem);
+        alignMenu.getItems().add(leftAlignMenuItem);
+        leftAlignMenuItem.setUserData("left");
+        leftAlignMenuItem.setSelected(true);
+        RadioMenuItem centerAlignMenuItem = new RadioMenuItem("居中");
+        group.getToggles().add(centerAlignMenuItem);
+        alignMenu.getItems().add(centerAlignMenuItem);
+        centerAlignMenuItem.setUserData("center");
+        RadioMenuItem rightAlignMenuItem = new RadioMenuItem("右对齐");
+        group.getToggles().add(rightAlignMenuItem);
+        alignMenu.getItems().add(rightAlignMenuItem);
+        rightAlignMenuItem.setUserData("right");
+
+        group.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                PseudoClass left = PseudoClass.getPseudoClass("left");
+                PseudoClass right = PseudoClass.getPseudoClass("right");
+                PseudoClass center = PseudoClass.getPseudoClass("center");
+                if(newValue.getUserData().equals("left"))
+                {
+                    System.out.println("left");
+                    textArea.pseudoClassStateChanged(left,true);
+                    textArea.pseudoClassStateChanged(right,false);
+                    textArea.pseudoClassStateChanged(center,false);
+
+                }
+                else if(newValue.getUserData().equals("center"))
+                {
+                    System.out.println("center");
+                        textArea.pseudoClassStateChanged(center,true);
+                        textArea.pseudoClassStateChanged(left,false);
+                        textArea.pseudoClassStateChanged(right,false);
+                }
+                else if(newValue.getUserData().equals("right"))
+                {
+                    System.out.println("right");
+                    textArea.pseudoClassStateChanged(right,true);
+                    textArea.pseudoClassStateChanged(left,false);
+                    textArea.pseudoClassStateChanged(center,false);
+                }
+
+            }
+
+        });
     }
 
     public void ShowStatusBar()

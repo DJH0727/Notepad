@@ -72,6 +72,7 @@ public class Main extends Application {
         Scene scene = new Scene(borderPane, 800, 600);
 
         primaryStage.setScene(scene);
+        scene.getStylesheets().add("text-area.css");
         //传入stage
         notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
         notepadMenu.initFileMenu(primaryStage,file);
@@ -158,6 +159,7 @@ public class Main extends Application {
         Scene scene = new Scene(borderPane, 800, 600);
 
         primaryStage.setScene(scene);
+        scene.getStylesheets().add("text-area.css");//
         //传入stage
         notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
         notepadMenu.initFileMenu(primaryStage,file);

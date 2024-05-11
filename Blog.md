@@ -393,6 +393,14 @@ public void find(boolean Type,TextField searchField,CheckBox caseSensitive,Check
 - 实现改变字体大小、颜色、字体样式功能
 - 实现改变文本对齐
 
+文本对齐通过调用`textArea.setStyle("-fx-text-alignment:center;")无法实现，只能通过css文件实现。
+
+新建一个css文件，然后再sence中加载css的伪类选择器。
+~~想了半天怎么办，最先的想法是根据边框和每行字宽加空格，但是字宽跟字体样式有关~~
+解决方案来源
+https://stackoverflow.com/questions/40341331/align-content-of-a-textarea-in-javafx?rq=3
+
+
 ~~大体完成了要求的功能，太累人了，不给自己没事找事写附加功能了~~
 
 ## Main
@@ -488,5 +496,10 @@ public void newStage(File file,Stage  primaryStage)
     }
 
 ~~~
+
+
+## 部分功能详解
+
+### 
 
 
