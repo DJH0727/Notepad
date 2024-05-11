@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCombination;
@@ -1176,6 +1177,13 @@ class HelpMenu
         aboutMenuItem.setOnAction(e -> {
             Stage stage = new Stage();
             stage.setTitle("关于");
+            Image icon = new Image("/headshot.jpg");
+            if (icon.isError()) {
+                Logger logger = Logger.getLogger(Main.class.getName());
+                logger.log(Level.SEVERE, "Error loading icon");
+            } else {
+                stage.getIcons().add(icon);
+            }
             VBox vbox = new VBox(new Label("程序名称：记事本\n" +
                     "版本号：1.0\n" +
                     "开发者信息：DJH0727\n" +

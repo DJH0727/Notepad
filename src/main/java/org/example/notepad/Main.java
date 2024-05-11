@@ -2,6 +2,7 @@ package org.example.notepad;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -26,6 +27,15 @@ public class Main extends Application {
         File file=null;
 
         primaryStage.setTitle("Notepad");
+
+        Image icon = new Image("/icon.png");
+        if (icon.isError()) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.SEVERE, "Error loading icon");
+        } else {
+            primaryStage.getIcons().add(icon);
+        }
+
 
         NotepadTextArea notepadTextArea;
         NotepadMenu notepadMenu;
@@ -83,6 +93,16 @@ public class Main extends Application {
         else
             primaryStage.setTitle(file.getName());
 
+        primaryStage.getIcons().add(new Image("file:icon.png"));
+        primaryStage.setTitle("Notepad");
+
+        Image icon = new Image("/icon.png");
+        if (icon.isError()) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.SEVERE, "Error loading icon");
+        } else {
+            primaryStage.getIcons().add(icon);
+        }
 
 
         NotepadTextArea notepadTextArea;
