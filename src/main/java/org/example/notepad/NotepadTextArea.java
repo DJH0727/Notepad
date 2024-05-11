@@ -35,6 +35,7 @@ public class NotepadTextArea {
     public NotepadTextArea() {
 
         textArea = new TextArea();
+        //textArea.setStyle("-fx-text-alignment: center;");
 
         //自动换行
         textArea.setWrapText(true);

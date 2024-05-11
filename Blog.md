@@ -1,5 +1,18 @@
 # java记事本开发日志
 
+## 目录
+
+- [要求](#要求)
+- [开发环境](#开发环境)
+- [2024-05-05](#2024-05-05)
+- [2024-05-06](#2024-05-06)
+- [2024-05-07](#2024-05-07)
+- [2024-05-08](#2024-05-08)
+- [2024-05-09](#2024-05-09)
+- [2024-05-10](#2024-05-10)
+- [2024-05-11](#2024-05-11)
+
+
 ## 要求
 ### 1.  图形用户界面（GUI）设计
 
@@ -34,20 +47,9 @@
 
 ## 开发环境
  -  IntelliJ IDEA 2021.1.2IntelliJ IDEA 2023.3.6 (Community Edition)
- -  Build #IC-233.15026.9, built on March 21, 2024
  -  Runtime version: 17.0.10+1-b1087.23 amd64
  -  VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
  -  Windows 11.0
- - GC: G1 Young Generation, G1 Old Generation
- - Memory: 2048M
- - Cores: 16
- - Registry:
- - ide.experimental.ui=true
- - Non-Bundled Plugins:
- - com.intellij.zh (233.287)
- - co.fitten.fittencode-intellij-beta (0.10.12)
- - com.jetbrains.space (233.15026.16)
- - Kotlin: 233.15026.9-IJ
 
 ## 2024-05-05
 
@@ -386,6 +388,105 @@ public void find(boolean Type,TextField searchField,CheckBox caseSensitive,Check
 ```
 - 之前的代码有点啸问题，推翻重写了，被硬控四个小时
 
+## 2024-05-11
 
+- 实现改变字体大小、颜色、字体样式功能
+- 实现改变文本对齐
+
+~~大体完成了要求的功能，太累人了，不给自己没事找事写附加功能了~~
+
+## Main
+
+~~~
+public void newStage(File file,Stage  primaryStage)
+    {
+    //打开文件
+        if(file==null)
+            primaryStage.setTitle("Notepad");
+        else
+            primaryStage.setTitle(file.getName());
+
+    //加载图标，设置标题
+        primaryStage.getIcons().add(new Image("file:icon.png"));
+        primaryStage.setTitle("Notepad");
+
+        Image icon = new Image("/icon.png");
+        if (icon.isError()) {
+            Logger logger = Logger.getLogger(Main.class.getName());
+            logger.log(Level.SEVERE, "Error loading icon");
+        } else {
+            primaryStage.getIcons().add(icon);
+        }
+
+    //创建组件,分别为文本编辑区域、菜单栏、状态栏、布局
+        NotepadTextArea notepadTextArea;
+        NotepadMenu notepadMenu;
+        NotepadStatusBar statusBar;
+        BorderPane borderPane;
+
+        // 创建文本编辑区域
+        notepadTextArea = new NotepadTextArea();
+        TextArea textArea = notepadTextArea.getTextArea();
+        //初始化TextArea的样式,原本还想搞个深色模式的，懒的搞了
+        NotepadTheme.initTheme(textArea);
+        //读取文件内容
+        if(file!=null) {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            new FileInputStream(file), StandardCharsets.UTF_8))) {
+
+                StringBuilder sb = new StringBuilder();
+                int c;
+                while ((c = reader.read()) != -1) {
+                    sb.append((char) c);
+                }
+                textArea.setText(sb.toString());
+            } catch (Exception e) {
+                Logger logger = Logger.getLogger(Main.class.getName());
+                logger.log(Level.SEVERE, "Error reading file", e);
+            }
+        }
+
+
+
+        // 创建菜单
+        notepadMenu = new NotepadMenu(notepadTextArea,file);
+        MenuBar menuBar = notepadMenu.getMenuBar();
+        // 创建状态栏
+        statusBar = new NotepadStatusBar(notepadTextArea);
+        HBox statusBarHBox = statusBar.getStatusBar();
+
+
+        // 设置布局
+        VBox MenuBox = new VBox(menuBar);
+        borderPane = new BorderPane();
+        borderPane.setTop(MenuBox);
+        borderPane.setCenter(textArea);
+        borderPane.setBottom(statusBarHBox);
+        //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
+  
+        Scene scene = new Scene(borderPane, 800, 600);
+
+        primaryStage.setScene(scene);
+        //以下都是因为没考虑好参数传递，需要就传的方法，就突出个高耦合
+        //传入stage，用于设置状态栏是否显示
+        notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
+        //传入file，用于文件操作
+        notepadMenu.initFileMenu(primaryStage,file);
+        //传入菜单栏的BOX，用于查找和替换那里
+        notepadMenu.initEditMenu(MenuBox);
+        notepadMenu.filemenu.CheckIfSave();//是否保存
+      
+       //就只是用来获取文件名的（）
+        notepadTextArea.setFile(file);
+        //如果文件没有保存，显示*号
+        notepadTextArea.CheckSave(primaryStage);
+
+        primaryStage.show();
+
+
+    }
+
+~~~
 
 

@@ -65,12 +65,14 @@ public class NotepadMenu {
     EditMenu editmenu;//编辑菜单
     ViewMenu viewmenu;//视图菜单
     HelpMenu helpmenu;//帮助菜单
-    public void setBorderPane(BorderPane borderPane,NotepadStatusBar bar) {
+    public void setBorderPane(BorderPane borderPane,NotepadStatusBar bar,Stage stage) {
 
-        this.viewmenu.initViewMenu(borderPane,bar);
+        this.viewmenu.initViewMenu(borderPane,bar,stage);
+
     }
     public void initFileMenu(Stage stage,File file)
     {
+        helpmenu.setCurrentStage(stage);
         //顺便也初始化编辑菜单的stage
         editmenu.setCurrentStage(stage);
         filemenu.initFileMenu(stage,file);
@@ -1040,9 +1042,11 @@ class ViewMenu
     //编码方式
     String encoding;
     File file;
-    public void initViewMenu(BorderPane borderPane,NotepadStatusBar statusBarHBox) {
+    Stage primaryStage;
+    public void initViewMenu(BorderPane borderPane,NotepadStatusBar statusBarHBox,Stage primaryStage) {
         this.statusBarHBox = statusBarHBox;
         this.borderPane = borderPane;
+        this.primaryStage = primaryStage;
     }
     public ViewMenu(NotepadTextArea notepadTextArea ,File file) {
 
@@ -1052,13 +1056,29 @@ class ViewMenu
 
 
         // 创建二级菜单
-        MenuItem fontMenuItem = new MenuItem("字体");
-        viewMenu.getItems().add(fontMenuItem);
+        ChangeFont();
         Encoding();
         MenuItem zoomMenuItem = new MenuItem("缩放");
         viewMenu.getItems().add(zoomMenuItem);
         ShowStatusBar();
         WrapText();
+    }
+
+    //字体样式
+    NotepadTheme theme;
+    public void ChangeFont()
+    {
+        MenuItem fontMenuItem = new MenuItem("字体");
+        //fontMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+M"));
+
+        fontMenuItem.setOnAction(event -> {
+            if(theme==null)
+                     theme = new NotepadTheme(textArea);
+            theme.showChangeStage(primaryStage);
+
+        });
+        viewMenu.getItems().add(fontMenuItem);
+
     }
 
     public void ShowStatusBar()
@@ -1152,6 +1172,8 @@ class HelpMenu
     Menu helpMenu ;
     TextArea textArea;
 
+    Stage primaryStage;
+
 
     public HelpMenu(NotepadTextArea notepadTextArea )
     {
@@ -1174,8 +1196,12 @@ class HelpMenu
     {
         MenuItem aboutMenuItem = new MenuItem("关于");
 
+
         aboutMenuItem.setOnAction(e -> {
             Stage stage = new Stage();
+            primaryStage.setOnCloseRequest(event -> {
+                stage.close();
+            });
             stage.setTitle("关于");
             Image icon = new Image("/headshot.jpg");
             if (icon.isError()) {
@@ -1202,4 +1228,7 @@ class HelpMenu
     }
 
 
+    public void setCurrentStage(Stage stage) {
+        this.primaryStage = stage;
+    }
 }

@@ -45,7 +45,7 @@ public class Main extends Application {
         // 创建文本编辑区域
         notepadTextArea = new NotepadTextArea();
         TextArea textArea = notepadTextArea.getTextArea();
-
+        NotepadTheme.initTheme(textArea);
 
         // 创建菜单
         notepadMenu = new NotepadMenu(notepadTextArea,file);
@@ -65,7 +65,7 @@ public class Main extends Application {
         borderPane.setCenter(textArea);
         borderPane.setBottom(statusBarHBox);
         //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
-        notepadMenu.setBorderPane(borderPane,statusBar);
+
 
 
         //borderPane.setBottom(null);
@@ -73,6 +73,7 @@ public class Main extends Application {
 
         primaryStage.setScene(scene);
         //传入stage
+        notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
         notepadMenu.initFileMenu(primaryStage,file);
         notepadMenu.initEditMenu(MenuBox);
         notepadMenu.filemenu.CheckIfSave();//是否保存
@@ -93,7 +94,6 @@ public class Main extends Application {
         else
             primaryStage.setTitle(file.getName());
 
-        primaryStage.getIcons().add(new Image("file:icon.png"));
         primaryStage.setTitle("Notepad");
 
         Image icon = new Image("/icon.png");
@@ -113,6 +113,7 @@ public class Main extends Application {
         // 创建文本编辑区域
         notepadTextArea = new NotepadTextArea();
         TextArea textArea = notepadTextArea.getTextArea();
+        NotepadTheme.initTheme(textArea);
         if(file!=null) {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(
@@ -150,7 +151,7 @@ public class Main extends Application {
         borderPane.setBottom(statusBarHBox);
         //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
         //System.out.println(file);
-        notepadMenu.setBorderPane(borderPane,statusBar);
+
 
 
         //borderPane.setBottom(null);
@@ -158,6 +159,7 @@ public class Main extends Application {
 
         primaryStage.setScene(scene);
         //传入stage
+        notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
         notepadMenu.initFileMenu(primaryStage,file);
         notepadMenu.initEditMenu(MenuBox);
         notepadMenu.filemenu.CheckIfSave();//是否保存
@@ -167,6 +169,9 @@ public class Main extends Application {
         notepadTextArea.CheckSave(primaryStage);
 
         primaryStage.show();
+
+
+
 
 
     }
