@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class NotepadTheme {
@@ -31,23 +32,28 @@ public class NotepadTheme {
 
     boolean isChange = false;
     TextArea textArea;
-
-
+    //演示文本
+    Text demoText = new Text("你好，世界！\nHello, World!\n1234567890");
     public NotepadTheme(TextArea textArea) {
 
         this.textArea = textArea;
         currentSize = savedSize;
         currentColor = savedColor;
         currentFont = savedFont;
+        demoText.setFont(Font.font(savedFont, FontWeight.NORMAL, FontPosture.REGULAR, savedSize));
+        demoText.setFill(savedColor);
 
     }
 
-    TextField sizeField = new TextField();
+
     Integer currentSize;
     ColorPicker colorPicker;
     ComboBox<String> fontComboBox = new ComboBox<>();
+    ComboBox<String> sizeComboBox = new ComboBox<>();
+    String[] sizes= {"8","9","10","11","12","13","14","15","16","18","20","22","24","26","28","36","48","72"};
     Color currentColor;
     String currentFont;
+
 
     public void showChangeStage(Stage stage) {
 
@@ -60,16 +66,17 @@ public class NotepadTheme {
             primaryStage.close();
         });
 
-        //sizeField = new TextField();
-        sizeField.setText(currentSize.toString());
+
+        sizeComboBox.getItems().addAll(sizes);
+        sizeComboBox.setValue(currentSize.toString());
+        sizeComboBox.setEditable(true);
+
         Label fontLabel = new Label("更改字体:");
         fontComboBox.getItems().addAll(Font.getFamilies());
         fontComboBox.setValue(currentFont);
         fontComboBox.setVisibleRowCount(10);//设置可见行数
 
         Label sizelabel = new Label("字体大小:");
-        Button sizeBiggerButton = new Button("+");
-        Button sizeSmallerButton = new Button("-");
         Label colorLabel = new Label("更改颜色:");
          colorPicker = new ColorPicker();
         colorPicker.setValue(currentColor);
@@ -79,82 +86,74 @@ public class NotepadTheme {
         gridPane.setVgap(20);
         gridPane.setHgap(20);
         gridPane.add(sizelabel, 0, 0);
-        gridPane.add(sizeField, 1, 0);
-        gridPane.add(sizeBiggerButton, 2, 0);
-        gridPane.add(sizeSmallerButton, 3, 0);
+        gridPane.add(sizeComboBox, 1, 0);
         gridPane.add(fontLabel, 0, 1);
         gridPane.add(fontComboBox, 1, 1);
         gridPane.add(colorLabel, 0, 2);
         gridPane.add(colorPicker, 1, 2);
-        gridPane.setAlignment(Pos.CENTER);
+        gridPane.add(new Label("演示文本："), 0, 3);
+
+        VBox demoBox = new VBox(demoText);
+        demoBox.setAlignment(Pos.CENTER);
+        VBox setBox = new VBox(gridPane, demoBox);
+
+        //gridPane.add(demoText, 0, 3);
+        //gridPane.setAlignment(Pos.CENTER);
 
 
 
 
-        sizeField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d*")) {
-                sizeField.setText(newValue.replaceAll("[\\D]", ""));
-            }
-            if(!newValue.isEmpty()) {
-                currentSize = Integer.parseInt(newValue);
-                savedSize = currentSize;
-                textArea.setFont(new Font(currentSize));
+        sizeComboBox.getEditor().textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                //System.out.println("输入已改变: " + newValue);
+                //判断输入是否为数字,且长度不超过2位
+                if (!newValue.matches("\\d*") || newValue.length() > 2|| newValue.isEmpty()) {
+                    sizeComboBox.getEditor().setText(oldValue);
+                }
+                else {
+                    currentSize = Integer.parseInt(newValue);
+                    savedSize = currentSize;
+                    demoText.setFont(Font.font(savedFont, FontWeight.NORMAL, FontPosture.REGULAR, savedSize));
+                    textArea.setFont(Font.font(currentFont, FontWeight.NORMAL, FontPosture.REGULAR, currentSize));
+                }
             }
         });
 
         fontComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            //System.out.println("旧值：" + oldValue);
-           // System.out.println("新值：" + newValue);
+
             currentFont = newValue;
             savedFont = currentFont;
+            demoText.setFont(Font.font(savedFont, FontWeight.NORMAL, FontPosture.REGULAR, savedSize));
             textArea.setFont(Font.font(newValue, FontWeight.BOLD, FontPosture.REGULAR, currentSize));
         });
 
-        //fontButton.setOnAction(e -> changeFont());
-        sizeBiggerButton.setOnAction(e -> changeSize(true));
-        sizeSmallerButton.setOnAction(e -> changeSize(false));
         colorPicker.setOnAction(e -> changeColor());
 
         VBox layout = new VBox(10);
-        layout.getChildren().addAll(gridPane);
+        layout.getChildren().addAll(setBox);
 
-        Scene scene = new Scene(layout, 400, 150);
+        Scene scene = new Scene(layout, 400, 300);
         primaryStage.setScene(scene);
         primaryStage.setTitle("字体");
         primaryStage.setResizable(false);
         primaryStage.show();
-        //将焦点移到size+按钮上
-        sizeBiggerButton.requestFocus();
+        //将焦点移到demoText按钮上
+        demoText.requestFocus();
 
         primaryStage.setOnCloseRequest(event ->{
-
         isChange=false;
         });
-
-
-
 
         isChange = true;
     }
 
-    private void changeSize(boolean isBigger) {
-
-        if(currentSize<1)return;
-        if(isBigger)
-            currentSize+=1;
-        else
-            currentSize-=1;
-
-        // 更改字体大小
-        savedSize = currentSize;
-        sizeField.setText(currentSize.toString());
-        textArea.setFont(Font.font(currentFont, FontWeight.NORMAL, FontPosture.REGULAR, currentSize));
-    }
 
     private void changeColor() {
 
          currentColor = colorPicker.getValue();
          savedColor = currentColor;
+        demoText.setFill(currentColor);
          textArea.setStyle("-fx-text-fill: " + toHexString(currentColor) + ";");
         // 更改字体颜色
         //textArea.setStyle("-fx-text-fill: red;");
