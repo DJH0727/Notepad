@@ -602,58 +602,7 @@ class EditMenu
 
 
         findMenuItem.setOnAction(event -> {
-
-
-
-            //已经打开了查找框，则不再打开新的
-            if(!isFind) {
-                gridPane = new GridPane();
-                gridPane.setPadding(new Insets(10, 10, 10, 10));
-                gridPane.setVgap(10);
-                gridPane.setHgap(10);
-                gridPane.add(searchField, 0, 0);
-                gridPane.add(prevButton, 1, 0);
-                gridPane.add(nextButton, 2, 0);
-                gridPane.add(caseSensitive, 3, 0);
-                gridPane.add(Word, 4, 0);
-                gridPane.add(cancelButton, 5, 0);
-                gridPane.setAlignment(Pos.CENTER);
-                currentTopBox.getChildren().add(gridPane);
-                isFind = true;
-                currentSearchField = searchField;
-            }
-            //更新查找框的文本为选中的文本
-            if(currentSearchField!=null)
-            {
-                currentSearchField.setText(textArea.getSelectedText());
-            }
-
-
-            //如果选中文本开启查找，则设置初值
-            if (!textArea.getSelectedText().isEmpty()) {
-                searchField.setText(textArea.getSelectedText());
-                lastMatchStart = textArea.getSelection().getStart();
-                lastMatchEnd = textArea.getSelection().getEnd();
-            }
-
-            prevButton.setOnAction(OnEvent->{//查找上一个
-
-                FindBefore();
-
-
-            });
-            nextButton.setOnAction(OnEvent->{//查找下一个
-
-                FindNext();
-
-            });
-            cancelButton.setOnAction(OnEvent->{
-                currentTopBox.getChildren().remove(gridPane);
-                currentStart=-1;
-                isFind=false;
-            });
-
-
+                ReplaceOrFind(false);
         });
 
 
@@ -807,6 +756,7 @@ class EditMenu
 
     Button replaceButton = new Button("替换");
     Button replaceAllButton = new Button("全部替换");
+    ToggleButton boldButton = new ToggleButton("▲");
     TextField replaceField = new TextField();
 
     public  void Replace() {
@@ -814,95 +764,126 @@ class EditMenu
         replaceMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+R"));
 
         replaceMenuItem.setOnAction(event -> {
-
-
-
-            //已经打开了查找框，则不再打开新的
-            if(!isFind) {
-                gridPane = new GridPane();
-                gridPane.setPadding(new Insets(10, 10, 10, 10));
-                gridPane.setVgap(10);
-                gridPane.setHgap(10);
-                gridPane.add(searchField, 0, 0);
-                gridPane.add(prevButton, 1, 0);
-                gridPane.add(nextButton, 2, 0);
-                gridPane.add(caseSensitive, 3, 0);
-                gridPane.add(Word, 4, 0);
-                gridPane.add(cancelButton, 5, 0);
-                gridPane.add(replaceField, 0, 1);
-                gridPane.add(replaceButton, 1, 1);
-                gridPane.add(replaceAllButton, 2, 1);
-                gridPane.setAlignment(Pos.CENTER);
-                currentTopBox.getChildren().add(gridPane);
-                isFind = true;
-                currentSearchField = searchField;
-            }
-            //更新查找框的文本为选中的文本
-            if(currentSearchField!=null)
-            {
-                currentSearchField.setText(textArea.getSelectedText());
-            }
-
-
-            //如果选中文本开启查找，则设置初值
-            if (!textArea.getSelectedText().isEmpty()) {
-                searchField.setText(textArea.getSelectedText());
-                lastMatchStart = textArea.getSelection().getStart();
-                lastMatchEnd = textArea.getSelection().getEnd();
-            }
-
-            prevButton.setOnAction(OnEvent->{//查找上一个
-
-                FindBefore();
-
-
-            });
-            nextButton.setOnAction(OnEvent->{//查找下一个
-
-                FindNext();
-
-            });
-            cancelButton.setOnAction(OnEvent->{
-                currentTopBox.getChildren().remove(gridPane);
-                currentStart=-1;
-                isFind=false;
-            });
-            replaceButton.setOnAction(OnEvent-> {//替换
-
-                String replaceText = replaceField.getText();
-                if(lastMatchStart!=lastMatchEnd) textArea.replaceSelection(replaceText);
-                FindNext();
-
-
-
-            });
-            replaceAllButton.setOnAction(OnEvent-> {//替换全部
-
-                String searchText = searchField.getText();
-                searchText=Pattern.quote(searchText);
-                // 如果选择了全词匹配
-                if (Word.isSelected())
-                    searchText = "\\b" + searchText + "\\b";
-                // 如果选择了区分大小写
-                Pattern pattern;
-                if(caseSensitive.isSelected())
-                    pattern= Pattern.compile(searchText);
-                else
-                    pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
-
-                Matcher matcher = pattern.matcher(textArea.getText());
-                String replacedText = matcher.replaceAll(replaceField.getText());
-                textArea.selectAll();
-                textArea.replaceSelection(replacedText);
-            });
-
-
-
-
+                    ReplaceOrFind(true);
         });
 
         editMenu.getItems().add(replaceMenuItem);
     }
+
+    public void ReplaceOrFind(boolean isReplace) {
+        //已经打开了查找框，则不再打开新的
+        if(!isFind) {
+            gridPane = new GridPane();
+            gridPane.setPadding(new Insets(5, 5, 5, 5));
+            gridPane.setVgap(5);
+            gridPane.setHgap(10);
+            gridPane.add(boldButton, 0, 0);
+            gridPane.add(searchField, 6, 0);
+            gridPane.add(prevButton, 7, 0);
+            gridPane.add(nextButton, 8, 0);
+            gridPane.add(caseSensitive, 9, 0);
+            gridPane.add(Word, 10, 0);
+            gridPane.add(cancelButton, 15, 0);
+
+
+            //gridPane.setAlignment(Pos.CENTER);
+            currentTopBox.getChildren().add(gridPane);
+
+            isFind = true;
+            currentSearchField = searchField;
+        }
+
+        if(isReplace)
+        {
+            gridPane.add(replaceField, 6, 1);
+            gridPane.add(replaceButton, 7, 1);
+            gridPane.add(replaceAllButton, 8, 1);
+            boldButton.setSelected(true);
+        }
+        boldButton.setOnAction(OnEvent-> {
+            if(boldButton.isSelected()) {
+                gridPane.add(replaceField, 6, 1);
+                gridPane.add(replaceButton, 7, 1);
+                gridPane.add(replaceAllButton, 8, 1);
+                boldButton.setText("▼");
+            }
+            else
+            {
+                gridPane.getChildren().remove(replaceField);
+                gridPane.getChildren().remove(replaceButton);
+                gridPane.getChildren().remove(replaceAllButton);
+                boldButton.setText("▲");
+            }
+        });
+
+
+
+        //更新查找框的文本为选中的文本
+        if(currentSearchField!=null)
+        {
+            currentSearchField.setText(textArea.getSelectedText());
+        }
+
+
+        //如果选中文本开启查找，则设置初值
+        if (!textArea.getSelectedText().isEmpty()) {
+            searchField.setText(textArea.getSelectedText());
+            lastMatchStart = textArea.getSelection().getStart();
+            lastMatchEnd = textArea.getSelection().getEnd();
+        }
+
+        prevButton.setOnAction(OnEvent->{//查找上一个
+
+            FindBefore();
+
+
+        });
+        nextButton.setOnAction(OnEvent->{//查找下一个
+
+            FindNext();
+
+        });
+        cancelButton.setOnAction(OnEvent->{
+            currentTopBox.getChildren().remove(gridPane);
+            currentStart=-1;
+            isFind=false;
+        });
+        replaceButton.setOnAction(OnEvent-> {//替换
+
+            String replaceText = replaceField.getText();
+            if(lastMatchStart!=lastMatchEnd&&searchField.getText().equals(textArea.getSelectedText())) textArea.replaceSelection(replaceText);
+            FindNext();
+
+
+
+        });
+        replaceAllButton.setOnAction(OnEvent-> {//替换全部
+
+            String searchText = searchField.getText();
+            searchText=Pattern.quote(searchText);
+            // 如果选择了全词匹配
+            if (Word.isSelected())
+                searchText = "\\b" + searchText + "\\b";
+            // 如果选择了区分大小写
+            Pattern pattern;
+            if(caseSensitive.isSelected())
+                pattern= Pattern.compile(searchText);
+            else
+                pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+
+            Matcher matcher = pattern.matcher(textArea.getText());
+            String replacedText = matcher.replaceAll(replaceField.getText());
+            textArea.selectAll();
+            textArea.replaceSelection(replacedText);
+        });
+
+
+
+    }
+
+
+
+
     public void GoTo()
     {
         MenuItem gotoMenuItem = new MenuItem("转到");
@@ -1111,7 +1092,7 @@ class ViewMenu
                 PseudoClass center = PseudoClass.getPseudoClass("center");
                 if(newValue.getUserData().equals("left"))
                 {
-                    System.out.println("left");
+                   // System.out.println("left");
                     textArea.pseudoClassStateChanged(left,true);
                     textArea.pseudoClassStateChanged(right,false);
                     textArea.pseudoClassStateChanged(center,false);
@@ -1119,14 +1100,14 @@ class ViewMenu
                 }
                 else if(newValue.getUserData().equals("center"))
                 {
-                    System.out.println("center");
+                    //System.out.println("center");
                         textArea.pseudoClassStateChanged(center,true);
                         textArea.pseudoClassStateChanged(left,false);
                         textArea.pseudoClassStateChanged(right,false);
                 }
                 else if(newValue.getUserData().equals("right"))
                 {
-                    System.out.println("right");
+                    //System.out.println("right");
                     textArea.pseudoClassStateChanged(right,true);
                     textArea.pseudoClassStateChanged(left,false);
                     textArea.pseudoClassStateChanged(center,false);
@@ -1268,6 +1249,7 @@ class HelpMenu
             }
             VBox vbox = new VBox(new Label("程序名称：记事本\n" +
                     "版本号：1.0\n" +
+                    "完成日期：2024-05-11\n" +
                     "开发者信息：DJH0727\n" +
                     "联系方式：2724948893@qq.com\n" +
                     "仓库地址：https://github.com/DJH0727/Notepad\n" ));
