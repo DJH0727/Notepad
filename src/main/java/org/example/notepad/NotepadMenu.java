@@ -27,6 +27,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.*;
 import java.nio.file.Files;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -988,8 +991,9 @@ class EditMenu
         timeDateMenuItem.setOnAction(event -> {
                     try {
                         //获取系统时间
-                        java.util.Date date = new java.util.Date();
-                        String text = date.toString();
+                        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.getDefault());
+
+                        String text =  dateFormat.format(new Date());
                         // 检查是否有选中的文本
                         if (textArea.getSelectedText() != null) {
                             // 替换选中的文本
