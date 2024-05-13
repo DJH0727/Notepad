@@ -191,6 +191,7 @@ class FileMenu
             if (openedfile != null) {
                 try {
                     //将文件名设置为标题
+                    //System.out.println(openedfile.getName());
                     Stage Newstage=new Stage();
                     Main main =new Main();
                     main.newStage(openedfile,Newstage);
@@ -1163,6 +1164,10 @@ class ViewMenu
         group.getToggles().add(GB2312MenuItem);
         encodingMenu.getItems().add(GB2312MenuItem);
         GB2312MenuItem.setUserData("GB2312");
+        RadioMenuItem GBKMenuItem = new RadioMenuItem("GBK");
+        group.getToggles().add(GBKMenuItem);
+        encodingMenu.getItems().add(GBKMenuItem);
+        GBKMenuItem.setUserData("GBK");
 
         group.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {

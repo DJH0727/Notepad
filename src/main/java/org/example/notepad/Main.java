@@ -90,12 +90,14 @@ public class Main extends Application {
 //新建窗口
     public void newStage(File file,Stage  primaryStage)
     {
+        //System.out.println(file.getName());
+
         if(file==null)
             primaryStage.setTitle("Notepad");
         else
             primaryStage.setTitle(file.getName());
 
-        primaryStage.setTitle("Notepad");
+       // primaryStage.setTitle("Notepad");
 
         Image icon = new Image("/icon.png");
         if (icon.isError()) {
