@@ -212,6 +212,7 @@ class FileMenu
     public void CheckIfSave()
     {
         currentStage.setOnCloseRequest(event -> {
+            //System.out.println("关闭窗口");
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Notepad");
             alert.setHeaderText(null);
@@ -601,14 +602,10 @@ class EditMenu
     {
         MenuItem findMenuItem = new MenuItem("查找");
         findMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+F"));
-        //首先，创建一个 TextInputDialog 对话框，让用户输入搜索字符串。
-        //然后，使用正则表达式在 TextArea 中搜索匹配的文本。
-
 
         findMenuItem.setOnAction(event -> {
                 ReplaceOrFind(false);
         });
-
 
         editMenu.getItems().add(findMenuItem);
 
@@ -855,7 +852,22 @@ class EditMenu
         replaceButton.setOnAction(OnEvent-> {//替换
 
             String replaceText = replaceField.getText();
-            if(lastMatchStart!=lastMatchEnd&&searchField.getText().equals(textArea.getSelectedText())) textArea.replaceSelection(replaceText);
+            String searchText = searchField.getText();
+            searchText=Pattern.quote(searchText);
+            // 如果选择了全词匹配
+            if (Word.isSelected())
+                searchText = "\\b" + searchText + "\\b";
+            // 如果选择了区分大小写
+            Pattern pattern;
+            if(caseSensitive.isSelected())
+                pattern= Pattern.compile(searchText);
+            else
+                pattern= Pattern.compile(searchText,Pattern.CASE_INSENSITIVE);
+
+            Matcher matcher = pattern.matcher(textArea.getSelectedText());
+            if(matcher.find())
+                 textArea.replaceSelection(replaceText);
+
             FindNext();
 
 
@@ -1245,9 +1257,7 @@ class HelpMenu
 
         aboutMenuItem.setOnAction(e -> {
             Stage stage = new Stage();
-            primaryStage.setOnCloseRequest(event -> {
-                stage.close();
-            });
+
             stage.setTitle("关于");
             Image icon = new Image("/headshot.jpg");
             if (icon.isError()) {
@@ -1269,6 +1279,10 @@ class HelpMenu
             stage.setMinWidth(300);  // 设置最小宽度
             stage.setMinHeight(200);  // 设置最小高度
             stage.show();
+            stage.setOnCloseRequest(event -> {
+                stage.close();
+            });
+
         });
 
         helpMenu.getItems().add(aboutMenuItem);

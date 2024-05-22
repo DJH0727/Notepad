@@ -26,63 +26,7 @@ public class Main extends Application {
 
         File file=null;
 
-        primaryStage.setTitle("Notepad");
-
-        Image icon = new Image("/icon.png");
-        if (icon.isError()) {
-            Logger logger = Logger.getLogger(Main.class.getName());
-            logger.log(Level.SEVERE, "Error loading icon");
-        } else {
-            primaryStage.getIcons().add(icon);
-        }
-
-
-        NotepadTextArea notepadTextArea;
-        NotepadMenu notepadMenu;
-        NotepadStatusBar statusBar;
-        BorderPane borderPane;
-
-        // 创建文本编辑区域
-        notepadTextArea = new NotepadTextArea();
-        TextArea textArea = notepadTextArea.getTextArea();
-        NotepadTheme.initTheme(textArea);
-
-        // 创建菜单
-        notepadMenu = new NotepadMenu(notepadTextArea,file);
-        MenuBar menuBar = notepadMenu.getMenuBar();
-
-        //menuBar.setStyle("-fx-background-color: Black;");
-        // 创建状态栏
-        statusBar = new NotepadStatusBar(notepadTextArea);
-        HBox statusBarHBox = statusBar.getStatusBar();
-
-       // statusBarHBox.setStyle("-fx-background-color: Black;");
-
-        // 设置布局
-        VBox MenuBox = new VBox(menuBar);
-        borderPane = new BorderPane();
-        borderPane.setTop(MenuBox);
-        borderPane.setCenter(textArea);
-        borderPane.setBottom(statusBarHBox);
-        //布局和状态栏传入Menu类，以便Menu类可以修改布局和状态栏
-
-
-
-        //borderPane.setBottom(null);
-        Scene scene = new Scene(borderPane, 800, 600);
-
-        primaryStage.setScene(scene);
-        scene.getStylesheets().add("text-area.css");
-        //传入stage
-        notepadMenu.setBorderPane(borderPane,statusBar,primaryStage);
-        notepadMenu.initFileMenu(primaryStage,file);
-        notepadMenu.initEditMenu(MenuBox);
-        notepadMenu.filemenu.CheckIfSave();//是否保存
-
-
-        notepadTextArea.setFile(file);
-        notepadTextArea.CheckSave(primaryStage);
-        primaryStage.show();
+       newStage(file,primaryStage);
     }
 
 
@@ -131,7 +75,7 @@ public class Main extends Application {
 
 
             } catch (Exception e) {
-                Logger logger = Logger.getLogger(Main.class.getName());
+                Logger  logger = Logger.getLogger(Main.class.getName());
                 logger.log(Level.SEVERE, "Error reading file", e);
             }
         }

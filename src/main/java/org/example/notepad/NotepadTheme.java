@@ -77,9 +77,7 @@ public class NotepadTheme {
 
 
         Stage primaryStage = new Stage();
-        stage.setOnCloseRequest(event -> {
-            primaryStage.close();
-        });
+
 
 
         sizeComboBox.getItems().addAll(sizes);
@@ -186,6 +184,8 @@ public class NotepadTheme {
 
         primaryStage.setOnCloseRequest(event ->{
         isChange=false;
+        primaryStage.close();
+
         });
 
         isChange = true;
